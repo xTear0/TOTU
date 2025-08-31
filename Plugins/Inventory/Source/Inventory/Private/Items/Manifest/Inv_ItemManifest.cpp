@@ -1,0 +1,121 @@
+﻿// Copyright xTear Studios
+/*-------------------------------------------------------------------------*/
+#include "Items/Manifest/Inv_ItemManifest.h"
+#include "Items/Inv_InventoryItem.h"
+#include "Items/Inv_ItemDataAsset.h"
+#include "Items/Components/Inv_ItemComponent.h"
+#include "Items/Fragments/Inv_ItemFragment.h"
+#include "Widgets/Composite/Inv_CompositeBase.h"
+/*-------------------------------------------------------------------------*/
+
+
+
+/*-------------------------------------------------------------------------*/
+/*   Functions                                                             */
+/*-------------------------------------------------------------------------*/
+#pragma region Inv_ItemManifest.cpp_Functions
+UInv_InventoryItem* FInv_ItemManifest::Manifest(UObject* NewOuter, UInv_ItemComponent* OwningComponent)
+{
+	// Load values from the data asset first
+	if (EntryIndex != INDEX_NONE) InitializeFromDataAsset();
+	
+	UInv_InventoryItem* Item = NewObject<UInv_InventoryItem>(NewOuter, UInv_InventoryItem::StaticClass());
+	
+	// Step 1: Copy the Manifest into the item.
+	Item->SetItemManifest(*this);
+	
+	// Step 2: Set the Owning Component for all fragments on the copy.
+	FInv_ItemManifest* ItemManifestMutableCopy = &Item->GetItemManifestMutable();
+	ItemManifestMutableCopy->ForEachFragmentSetOwningManifest(ItemManifestMutableCopy);
+
+	// Step 3: Call Manifest on each fragment on the copy.
+	for (auto& Fragment : Item->GetItemManifestMutable().GetFragmentsMutable())
+	{
+		Fragment.GetMutable().Manifest();
+	}
+
+	// Step 4: Clear the original fragments.
+	ClearFragments();
+	
+	return Item;
+}
+
+int32 FInv_ItemManifest::GetItemAttributeValue(FGameplayTag AttributeTag) const
+{
+	for (const FInv_ItemAttributePair& Pair : ItemAttributesContainer)
+	{
+		if (Pair.AttributeTag == AttributeTag)
+		{
+			return Pair.Value;
+		}
+	}
+	return 0;
+}
+
+void FInv_ItemManifest::ForEachFragmentSetOwningManifest(FInv_ItemManifest* InManifest)
+{
+	for (TInstancedStruct<FInv_ItemFragment>& Fragment : DisplayFragments)
+	{
+		if (FInv_ItemFragment* BasePtr = Fragment.GetMutablePtr<FInv_ItemFragment>())
+		{
+			BasePtr->SetOwningManifest(InManifest);
+		}
+	}
+}
+
+void FInv_ItemManifest::AssimilateInventoryFragments(UInv_CompositeBase* Composite) const
+{
+	const auto& InventoryItemFragments = GetAllFragmentsOfType<FInv_InventoryItemFragment>();
+	for (const auto* Fragment : InventoryItemFragments)
+	{
+		Composite->ApplyFunction([Fragment](UInv_CompositeBase* Widget)
+		{
+			Fragment->Assimilate(Widget);
+		});
+	}
+}
+
+void FInv_ItemManifest::SpawnPickupActor(const UObject* WorldContextObject, const FVector& SpawnLocation,
+                                         const FRotator& SpawnRotation)
+{
+	if (!IsValid(PickupActorClass) || !IsValid(WorldContextObject)) return;
+
+	AActor* SpawnedActor = WorldContextObject->GetWorld()->SpawnActor<AActor>(PickupActorClass, SpawnLocation, SpawnRotation);
+	if (!IsValid(SpawnedActor)) return;
+
+	// Set the item manifest, item category, item type, etc.
+	UInv_ItemComponent* ItemComp = SpawnedActor->FindComponentByClass<UInv_ItemComponent>();
+	check(ItemComp);
+
+	ItemComp->InitItemManifest(*this);
+}
+
+void FInv_ItemManifest::InitializeFromDataAsset()
+{
+    if (SourceItemDataAsset && SourceItemDataAsset->ItemEntries.IsValidIndex(EntryIndex))
+    {
+        const FInv_ItemEntry& Entry = SourceItemDataAsset->ItemEntries[EntryIndex];
+
+        ItemName = Entry.ItemName;
+        ItemDescription = Entry.ItemDescription;
+        ItemAttributesContainer = Entry.ItemAttributesContainer;
+        ItemAbilitiesContainer = Entry.ItemAbilitiesContainer;
+        ItemRarity = Entry.ItemRarity;
+        ItemCategory = Entry.ItemCategory;
+        ItemType = Entry.ItemType;
+        SellValue = Entry.SellValue;
+        DisplayFragments = Entry.DisplayFragments;
+        PickupActorClass = Entry.PickupActorClass;
+    }
+}
+
+void FInv_ItemManifest::ClearFragments()
+{
+	for (auto& Fragment : DisplayFragments)
+	{
+		Fragment.Reset();
+	}
+	DisplayFragments.Empty();
+}
+#pragma endregion
+/*-------------------------------------------------------------------------*/

@@ -1,0 +1,76 @@
+﻿// Copyright xTear Studios
+/*-------------------------------------------------------------------------*/
+#pragma once
+#include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
+#include "Engine/DataAsset.h"
+#include "StructUtils/InstancedStruct.h"
+#include "Types/Inv_EnumTypes.h"
+#include "Inv_ItemDataAsset.generated.h"
+/*-------------------------------------------------------------------------*/
+
+
+
+/*-------------------------------------------------------------------------*/
+/*   Declarations                                                          */
+/*-------------------------------------------------------------------------*/
+struct FInv_ItemAbilityPair;
+struct FInv_ItemAttributePair;
+struct FInv_ItemFragment;
+enum class EInv_ItemRarity : uint8;
+enum class EInv_ItemCategory : uint8;
+
+USTRUCT(BlueprintType)
+struct FInv_ItemEntry
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	FText ItemName;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	FText ItemDescription;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	TArray<FInv_ItemAttributePair> ItemAttributesContainer;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	TArray<FInv_ItemAbilityPair> ItemAbilitiesContainer;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	EInv_ItemRarity ItemRarity{EInv_ItemRarity::Common};
+	
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	EInv_ItemCategory ItemCategory{EInv_ItemCategory::None};
+
+	UPROPERTY(EditAnywhere, Category = "Inventory", meta = (Categories="TOTUItems"))
+	FGameplayTag ItemType;
+	
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	int32 SellValue = 0;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory", meta = (ExcludeBaseStruct))
+	TArray<TInstancedStruct<FInv_ItemFragment>> DisplayFragments;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	TSubclassOf<AActor> PickupActorClass;
+};
+/*-------------------------------------------------------------------------*/
+
+
+
+/*-------------------------------------------------------------------------*/
+/*   Class Functionality                                                   */
+/*-------------------------------------------------------------------------*/
+#pragma region Inv_ItemDataAsset.h_Class
+UCLASS()
+class INVENTORY_API UInv_ItemDataAsset : public UDataAsset
+{
+	GENERATED_BODY()
+	
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TArray<FInv_ItemEntry> ItemEntries;
+};
+#pragma endregion
+/*-------------------------------------------------------------------------*/
