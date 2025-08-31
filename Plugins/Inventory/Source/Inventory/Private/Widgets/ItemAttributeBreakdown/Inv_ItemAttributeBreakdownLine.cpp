@@ -1,6 +1,7 @@
 ﻿// Copyright xTear Studios
 /*-------------------------------------------------------------------------*/
 #include "Widgets/ItemAttributeBreakdown/Inv_ItemAttributeBreakdownLine.h"
+#include "Components/TextBlock.h"
 /*-------------------------------------------------------------------------*/
 
 

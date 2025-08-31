@@ -25,8 +25,6 @@ class UVerticalBox;
 /*   Class Functionality                                                   */
 /*-------------------------------------------------------------------------*/
 #pragma region Inv_ItemAttributeBreakdown.h_Class
-
-
 UCLASS()
 class INVENTORY_API UInv_ItemAttributeBreakdown : public UUserWidget
 {

@@ -3,12 +3,23 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Components/TextBlock.h"
 #include "Inv_ItemAttributeBreakdownLine.generated.h"
 /*-------------------------------------------------------------------------*/
 
 
 
+/*-------------------------------------------------------------------------*/
+/*   Declarations		                                                   */
+/*-------------------------------------------------------------------------*/
+class UTextBlock;
+/*-------------------------------------------------------------------------*/
+
+
+
+/*-------------------------------------------------------------------------*/
+/*   Class Functionality                                                   */
+/*-------------------------------------------------------------------------*/
+#pragma region Inv_ItemAttributeBreakdownLine.h_Class
 UCLASS()
 class INVENTORY_API UInv_ItemAttributeBreakdownLine : public UUserWidget
 {
