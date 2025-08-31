@@ -106,8 +106,8 @@ private:
 	UInv_ItemDescription* GetItemDescription(const EInv_ItemRarity& Rarity = {EInv_ItemRarity::Common}, bool UseRarity = {false});
 	UInv_ItemAttributeBreakdown* GetAttributeBreakdown();
 	
-	FTimerHandle DescriptionTimer;				// Item Description timer delay before showing it.
-	FTimerHandle AttributeBreakdownTimer;		// Attribute Breakdown timer delay before showing it.
+	FTimerHandle DescriptionTimer;				// Item Description timer handle, the delay before showing it.
+	FTimerHandle AttributeBreakdownTimer;		// Attribute Breakdown timer handle, the delay before showing it.
 
 	UPROPERTY(EditAnywhere, Category =  "Inventory")
 	float DescriptionTimerDelay = 0.5f;
