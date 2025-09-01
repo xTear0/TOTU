@@ -35,6 +35,8 @@ void AHeroPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	DOREPLIFETIME(AHeroPlayerState, Level);
 	DOREPLIFETIME(AHeroPlayerState, XP);
+	DOREPLIFETIME(AHeroPlayerState, AttributePoints);
+	DOREPLIFETIME(AHeroPlayerState, AbilityPoints);
 }
 
 void AHeroPlayerState::BeginPlay()
@@ -74,6 +76,18 @@ void AHeroPlayerState::AddToLevel(int32 InLevel)
 	OnLevelChangedDelegate.Broadcast(InLevel);
 }
 
+void AHeroPlayerState::AddToAttributePoints(int32 InPoints)
+{
+	AttributePoints += InPoints;
+	OnAttributePointChangedDelegate.Broadcast(InPoints);
+}
+
+void AHeroPlayerState::AddToAbilityPoints(int32 InPoints)
+{
+	AbilityPoints += InPoints;
+	OnAbilityPointChangedDelegate.Broadcast(InPoints);
+}
+
 void AHeroPlayerState::OnRep_Level(int32 OldLevel)
 {
 	OnLevelChangedDelegate.Broadcast(Level);
@@ -82,6 +96,16 @@ void AHeroPlayerState::OnRep_Level(int32 OldLevel)
 void AHeroPlayerState::OnRep_XP(int32 OldXP)
 {
 	OnXPChangedDelegate.Broadcast(XP);
+}
+
+void AHeroPlayerState::OnRep_AttributePoints(int32 OldAttributePoints)
+{
+	OnAttributePointChangedDelegate.Broadcast(AbilityPoints);
+}
+
+void AHeroPlayerState::OnRep_AbilityPoints(int32 OldAbilityPoints)
+{
+	OnAbilityPointChangedDelegate.Broadcast(AbilityPoints);
 }
 #pragma endregion
 /*-------------------------------------------------------------------------*/

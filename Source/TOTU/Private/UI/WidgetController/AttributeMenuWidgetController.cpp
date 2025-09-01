@@ -4,6 +4,7 @@
 #include "AbilitySystem/TOTUAttributeSet.h"
 #include "AbilitySystem/Data/AttributeInfo.h"
 #include "TOTUGameplayTags.h"
+#include "Player/HeroPlayerState.h"
 /*-------------------------------------------------------------------------*/
 
 
@@ -26,6 +27,13 @@ void UAttributeMenuWidgetController::BindCallbacksToDependencies()
 			}
 		);
 	}
+
+	AHeroPlayerState* TOTUPlayerState = CastChecked<AHeroPlayerState>(PlayerState);
+	TOTUPlayerState->OnAttributePointChangedDelegate.AddLambda([this](int32 Points)
+	{
+		AttributePointsChangedDelegate.Broadcast(Points);
+	});
+	
 }
 
 void UAttributeMenuWidgetController::BroadcastInitialValues()
@@ -38,6 +46,9 @@ void UAttributeMenuWidgetController::BroadcastInitialValues()
 		BroadcastAttributeInfo(Pair.Key, Pair.Value());
 	}
 
+	AHeroPlayerState* TOTUPlayerState = CastChecked<AHeroPlayerState>(PlayerState);
+	AttributePointsChangedDelegate.Broadcast(TOTUPlayerState->GetAttributePoints());
+	
 }
 void UAttributeMenuWidgetController::BroadcastAttributeInfo(const FGameplayTag& AttributeTag, const FGameplayAttribute& Attribute) const
 {
