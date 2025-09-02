@@ -111,12 +111,16 @@ void AHeroCharacter::AddToPlayerLevel_Implementation(int32 InPlayerLevel)
 
 void AHeroCharacter::AddToAttributePoints_Implementation(int32 InAttributePoints)
 {
-	// TODO: Add Attribute Points to PlayerState
+	AHeroPlayerState* HeroPlayerState = GetPlayerState<AHeroPlayerState>();
+	check(HeroPlayerState);
+	HeroPlayerState->AddToAttributePoints(InAttributePoints);
 }
 
 void AHeroCharacter::AddToAbilityPoints_Implementation(int32 InAbilityPoints)
 {
-	// TODO: Add AbilityPoints to PlayerState
+	AHeroPlayerState* HeroPlayerState = GetPlayerState<AHeroPlayerState>();
+	check(HeroPlayerState);
+	HeroPlayerState->AddToAbilityPoints(InAbilityPoints);
 }
 
 int32 AHeroCharacter::GetPlayerLevel_Implementation()
