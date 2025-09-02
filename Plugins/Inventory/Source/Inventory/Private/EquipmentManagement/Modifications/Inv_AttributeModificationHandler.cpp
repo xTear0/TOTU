@@ -120,36 +120,41 @@ void UInv_AttributeModificationHandler::RemoveGameplayEffect()
 
 void UInv_AttributeModificationHandler::ApplyGameplayEffect()
 {
+    UAbilitySystemComponent* ASC = GetValidatedAbilitySystemComponent();
+    if (!ASC) return;
+    CachedASC = ASC;
+    
+    TMap<FGameplayTag, int32> AttributeTotals = CalculateAttributeTotals();
+    
+    UGameplayEffect* DynamicEffect = CreateDynamicGameplayEffect(AttributeTotals);
+    if (!DynamicEffect) return;
+    
+    ApplyEffectToAbilitySystem(ASC, DynamicEffect);
+}
+
+UAbilitySystemComponent* UInv_AttributeModificationHandler::GetValidatedAbilitySystemComponent()
+{
     // Get the Player State (assuming this object is owned by Player State)
     AHeroPlayerState* HeroPlayerState = GetTypedOuter<AHeroPlayerState>();
     if (!HeroPlayerState)
     {
         UE_LOG(LogTemp, Warning, TEXT("AttributeModificationHandler: Could not find Player State"));
-        return;
+        return nullptr;
     }
     
-    // Get and cache the Ability System Component
+    // Get the Ability System Component
     UAbilitySystemComponent* ASC = HeroPlayerState->GetAbilitySystemComponent();
     if (!ASC)
     {
         UE_LOG(LogTemp, Warning, TEXT("AttributeModificationHandler: Player State has no Ability System Component"));
-        return;
-    }
-    CachedASC = ASC;
-    
-    // Create a dynamic gameplay effect
-    UGameplayEffect* DynamicEffect = NewObject<UGameplayEffect>(GetTransientPackage());
-    if (!DynamicEffect)
-    {
-        UE_LOG(LogTemp, Error, TEXT("AttributeModificationHandler: Failed to create dynamic gameplay effect"));
-        return;
+        return nullptr;
     }
     
-    // Configure the effect for infinite duration
-    DynamicEffect->DurationPolicy = EGameplayEffectDurationType::Infinite;
-    DynamicEffect->Modifiers.Empty(); // Clear any existing modifiers
-    
-    // Collect all unique attributes and their total values from active payloads
+    return ASC;
+}
+
+TMap<FGameplayTag, int32> UInv_AttributeModificationHandler::CalculateAttributeTotals()
+{
     TMap<FGameplayTag, int32> AttributeTotals;
     
     for (const auto& PayloadPair : ActivePayloads)
@@ -169,53 +174,83 @@ void UInv_AttributeModificationHandler::ApplyGameplayEffect()
         }
     }
     
-    for (const auto& AttributeTotal : AttributeTotals)
+    return AttributeTotals;
+}
+
+UGameplayEffect* UInv_AttributeModificationHandler::CreateDynamicGameplayEffect(const TMap<FGameplayTag, int32>& AttributeTotals)
+{
+    // Create a dynamic gameplay effect
+    UGameplayEffect* DynamicEffect = NewObject<UGameplayEffect>(GetTransientPackage());
+    if (!DynamicEffect)
     {
-        // Skip attributes with zero modification
-        if (AttributeTotal.Value == 0)
-        {
-            continue;
-        }
-        
-        // Create a new modifier
-        FGameplayModifierInfo NewModifier;
-        
-        // Set the attribute to modify - resolve tag to actual attribute
-        FGameplayAttribute GameplayAttribute = GetAttributeFromTag(AttributeTotal.Key);
-        if (!GameplayAttribute.IsValid())
-        {
-            UE_LOG(LogTemp, Warning, TEXT("AttributeModificationHandler: Invalid attribute for tag %s"), *AttributeTotal.Key.ToString());
-            continue;
-        }
-        NewModifier.Attribute = GameplayAttribute;
-        
-        // Set the operation (additive modification)
-        NewModifier.ModifierOp = EGameplayModOp::Additive;
-        
-        // Set the magnitude using a simple scalar float
-        FScalableFloat Magnitude;
-        Magnitude.Value = static_cast<float>(AttributeTotal.Value);
-        
-        NewModifier.ModifierMagnitude = FGameplayEffectModifierMagnitude(Magnitude);
-        
-        // Add the modifier to the effect
-        DynamicEffect->Modifiers.Add(NewModifier);
+        UE_LOG(LogTemp, Error, TEXT("AttributeModificationHandler: Failed to create dynamic gameplay effect"));
+        return nullptr;
     }
     
+    // Configure the effect for infinite duration
+    DynamicEffect->DurationPolicy = EGameplayEffectDurationType::Infinite;
+    DynamicEffect->Modifiers.Empty(); // Clear any existing modifiers
+    
+    // Add modifiers for each attribute
+    for (const auto& AttributeTotal : AttributeTotals)
+    {
+        if (AddModifierToEffect(DynamicEffect, AttributeTotal.Key, AttributeTotal.Value))
+        {
+            UE_LOG(LogTemp, VeryVerbose, TEXT("AttributeModificationHandler: Added modifier for %s with value %d"), 
+                *AttributeTotal.Key.ToString(), AttributeTotal.Value);
+        }
+    }
+    
+    return DynamicEffect;
+}
+
+bool UInv_AttributeModificationHandler::AddModifierToEffect(UGameplayEffect* Effect, const FGameplayTag& AttributeTag, int32 Value)
+{
+    // Skip attributes with zero modification
+    if (Value == 0)
+    {
+        return false;
+    }
+    
+    // Resolve tag to actual attribute
+    FGameplayAttribute GameplayAttribute = GetAttributeFromTag(AttributeTag);
+    if (!GameplayAttribute.IsValid())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("AttributeModificationHandler: Invalid attribute for tag %s"), *AttributeTag.ToString());
+        return false;
+    }
+    
+    // Create and configure the modifier
+    FGameplayModifierInfo NewModifier;
+    NewModifier.Attribute = GameplayAttribute;
+    NewModifier.ModifierOp = EGameplayModOp::Additive;
+    
+    // Set the magnitude using a simple scalar float
+    FScalableFloat Magnitude;
+    Magnitude.Value = static_cast<float>(Value);
+    NewModifier.ModifierMagnitude = FGameplayEffectModifierMagnitude(Magnitude);
+    
+    // Add the modifier to the effect
+    Effect->Modifiers.Add(NewModifier);
+    return true;
+}
+
+void UInv_AttributeModificationHandler::ApplyEffectToAbilitySystem(UAbilitySystemComponent* ASC, UGameplayEffect* Effect)
+{
     // Only apply the effect if we have modifiers
-    if (DynamicEffect->Modifiers.Num() > 0)
+    if (Effect->Modifiers.Num() > 0)
     {
         // Apply the effect directly using the class
         FGameplayEffectContextHandle ContextHandle = ASC->MakeEffectContext();
-        ActiveEffectHandle = ASC->ApplyGameplayEffectToSelf(DynamicEffect, 1.0f, ContextHandle);
+        ActiveEffectHandle = ASC->ApplyGameplayEffectToSelf(Effect, 1.0f, ContextHandle);
         
         if (!ActiveEffectHandle.IsValid())
         {
-            UE_LOG(LogTemp, Warning, TEXT("AttributeModificationHandler: Failed to apply gameplay effect. Modifiers: %d"), DynamicEffect->Modifiers.Num());
+            UE_LOG(LogTemp, Warning, TEXT("AttributeModificationHandler: Failed to apply gameplay effect. Modifiers: %d"), Effect->Modifiers.Num());
         }
         else
         {
-            UE_LOG(LogTemp, Log, TEXT("AttributeModificationHandler: Successfully applied gameplay effect with %d modifiers"), DynamicEffect->Modifiers.Num());
+            UE_LOG(LogTemp, Log, TEXT("AttributeModificationHandler: Successfully applied gameplay effect with %d modifiers"), Effect->Modifiers.Num());
         }
     }
     else

@@ -109,8 +109,13 @@ public:
 
     
 private:
-
+    // Helper Functions
     FGameplayAttribute GetAttributeFromTag(const FGameplayTag& AttributeTag) const;
+    UAbilitySystemComponent* GetValidatedAbilitySystemComponent();
+    TMap<FGameplayTag, int32> CalculateAttributeTotals();
+    UGameplayEffect* CreateDynamicGameplayEffect(const TMap<FGameplayTag, int32>& AttributeTotals);
+    bool AddModifierToEffect(UGameplayEffect* Effect, const FGameplayTag& AttributeTag, int32 Value);
+    void ApplyEffectToAbilitySystem(UAbilitySystemComponent* ASC, UGameplayEffect* Effect);
     
     // Payload storage
     UPROPERTY()
