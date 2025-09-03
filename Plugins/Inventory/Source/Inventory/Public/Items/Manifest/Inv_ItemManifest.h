@@ -88,8 +88,6 @@ struct INVENTORY_API FInv_ItemManifest
 	void SpawnPickupActor(const UObject* WorldContextObject, const FVector& SpawnLocation, const FRotator& SpawnRotation);
 	
 private:
-
-
 	
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TObjectPtr<UInv_ItemDataAsset> SourceItemDataAsset;
@@ -103,6 +101,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	FText ItemDescription;
 
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	EInv_ItemStar ItemStars{EInv_ItemStar::OneStar};
+	
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TArray<FInv_ItemAttributePair> ItemAttributesContainer;
 

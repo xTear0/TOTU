@@ -46,9 +46,14 @@ void UInv_InventoryComponent::BeginPlay()
 UFUNCTION(BlueprintCallable, Category = "Inventory")
 void UInv_InventoryComponent::TryAddItem(UInv_ItemComponent* ItemComponent)
 {
+	// Is the item being added to the TreasureMenu or the InventoryMenu?
+	
+	
 	FInv_SlotAvailabilityResult Result = InventoryMenu->HasRoomForItem(ItemComponent);
-
+	
 	UInv_InventoryItem* FoundItem = InventoryList.FindFirstItemByType(ItemComponent->GetItemManifest().GetItemType());
+	
+	 
 	Result.Item = FoundItem;
 	
 	if (Result.TotalRoomToFill == 0)
