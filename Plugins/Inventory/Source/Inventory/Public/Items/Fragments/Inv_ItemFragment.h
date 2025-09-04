@@ -53,6 +53,7 @@ protected:
 	// Query Data from Manifest
 	FText QueryManifestForItemName() const;
 	FText QueryManifestForItemDescription() const;
+	EInv_ItemStar QueryManifestForItemStars() const;
 	EInv_ItemRarity QueryItemManifestForRarity() const;
 	int32 QueryItemManifestForAttributeValue(FGameplayTag AttributeTag) const;
 	int32 QueryItemManifestForSellValue() const;
@@ -121,6 +122,7 @@ struct FInv_TextFragment : public FInv_InventoryItemFragment
 	FText GetText() const { return FragmentText;}
 	void SetText(const FText& Text) { FragmentText = Text; }
 	virtual void Assimilate(UInv_CompositeBase* Composite) const override;
+	
 private:
 	
 	UPROPERTY(EditAnywhere, Category = "Inventory")
@@ -193,6 +195,14 @@ protected:
 	FGameplayTag AttributeTag{FGameplayTag::EmptyTag};
 };
 
+USTRUCT(BlueprintType)
+struct FInv_EnumFragment : public FInv_InventoryItemFragment
+{
+	GENERATED_BODY()
+
+	virtual void Manifest() override;
+	virtual void Assimilate(UInv_CompositeBase* Composite) const override;
+};
 
 USTRUCT(BlueprintType)
 struct FInv_StackableFragment : public FInv_ItemFragment

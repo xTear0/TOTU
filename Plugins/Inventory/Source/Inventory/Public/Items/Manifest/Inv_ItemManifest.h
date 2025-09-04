@@ -56,7 +56,8 @@ struct INVENTORY_API FInv_ItemManifest
 	
 	// Getters for Equipped Item Payload
 	FText GetItemName() const { return ItemName; }
-	FText GetItemDescription() const { return ItemDescription; }
+	FText GetItemDescription() const { return ItemDescription; }\
+	EInv_ItemStar GetItemStars() const { return ItemStars; }
 	TArray<FInv_ItemAttributePair> GetItemAttributes() const { return ItemAttributesContainer; }
 	TArray<FInv_ItemAbilityPair> GetItemAbilities() const { return ItemAbilitiesContainer; }
 

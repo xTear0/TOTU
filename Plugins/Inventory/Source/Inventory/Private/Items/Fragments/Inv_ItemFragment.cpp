@@ -9,6 +9,7 @@
 #include "Items/Manifest/Inv_ItemManifest.h"
 #include "TOTU/Public/Player/HeroPlayerState.h"
 #include "Widgets/Composite/Inv_CompositeBase.h"
+#include "Widgets/Composite/Inv_Leaf_EnumValue.h"
 #include "Widgets/Composite/Inv_Leaf_Image.h"
 #include "Widgets/Composite/Inv_Leaf_LabeledValue.h"
 #include "Widgets/Composite/Inv_Leaf_Text.h"
@@ -28,6 +29,11 @@ void FInv_LabeledNumberFragment::Manifest()
 }
 
 void FInv_NumberedLabelFragment::Manifest()
+{
+	FInv_InventoryItemFragment::Manifest();
+}
+
+void FInv_EnumFragment::Manifest()
 {
 	FInv_InventoryItemFragment::Manifest();
 }
@@ -53,6 +59,15 @@ FText FInv_ItemFragment::QueryManifestForItemDescription() const
 		return OwningManifest->GetItemDescription(); 
 	}
 	return FText::GetEmpty();
+}
+
+EInv_ItemStar FInv_ItemFragment::QueryManifestForItemStars() const
+{
+	if (OwningManifest != nullptr)
+	{
+		return OwningManifest->GetItemStars(); 
+	}
+	return EInv_ItemStar::OneStar;
 }
 
 EInv_ItemRarity FInv_ItemFragment::QueryItemManifestForRarity() const
@@ -173,6 +188,17 @@ void FInv_NumberedLabelFragment::Assimilate(UInv_CompositeBase* Composite) const
 	FLinearColor AttributeColor = UInv_WidgetUtils::GetColorFromAttributeTag(AttributeTag);
 	
 	ValuedLabel->SetAttributeValueAndTextWithColor(SignedAttributeValue, AttributeText, AttributeColor);
+}
+
+void FInv_EnumFragment::Assimilate(UInv_CompositeBase* Composite) const
+{
+	FInv_InventoryItemFragment::Assimilate(Composite);
+	if (!MatchesWidgetTag(Composite)) return;
+
+	UInv_Leaf_EnumValue* EnumValueLabel = Cast<UInv_Leaf_EnumValue>(Composite);
+	if (!IsValid(EnumValueLabel)) return;
+
+	EnumValueLabel->SetEnumStarValue(QueryManifestForItemStars());
 }
 
 float FInv_LabeledNumberFragment::GetValue() const

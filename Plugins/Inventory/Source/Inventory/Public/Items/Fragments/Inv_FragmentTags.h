@@ -21,6 +21,7 @@ namespace FragmentTags
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(ItemTypeFragment)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(FlavorTextFragment)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(StarsFragment)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(SellValueFragment)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(RequiredLevelFragment)
 	
@@ -29,6 +30,8 @@ namespace FragmentTags
 		UE_DECLARE_GAMEPLAY_TAG_EXTERN(StatMod_1)
 		UE_DECLARE_GAMEPLAY_TAG_EXTERN(StatMod_2)
 		UE_DECLARE_GAMEPLAY_TAG_EXTERN(StatMod_3)
+		UE_DECLARE_GAMEPLAY_TAG_EXTERN(StatMod_4)
+		UE_DECLARE_GAMEPLAY_TAG_EXTERN(StatMod_5)
 	}
 }
 /*-------------------------------------------------------------------------*/
