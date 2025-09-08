@@ -133,7 +133,7 @@ void FInv_TextFragment::Assimilate(UInv_CompositeBase* Composite) const
 
 	if (bPrefixWithRarity)
 	{
-		// Adds the Rarity of the Item to the Text with a space, i.e., Legendary Weapon. (Legendary )
+		// Adds the Rarity of the Item to the Text with a space, i.e., Legendary Weapon. (Exact: "Legendary ")
 		const FText RarityPrefix = UInv_WidgetUtils::GetPrefixFromRarityEnum(QueryItemManifestForRarity());
 		LeafText->SetText(FText::Format(FText::FromString(TEXT("{0} {1}")), RarityPrefix, FragmentText));
 	}

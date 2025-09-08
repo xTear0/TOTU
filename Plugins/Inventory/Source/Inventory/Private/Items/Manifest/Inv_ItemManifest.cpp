@@ -6,6 +6,8 @@
 #include "Items/Components/Inv_ItemComponent.h"
 #include "Items/Fragments/Inv_ItemFragment.h"
 #include "Widgets/Composite/Inv_CompositeBase.h"
+#include "Widgets/ItemDescription/Inv_ItemDescription.h"
+#include "Widgets/Utils/Inv_WidgetUtils.h"
 /*-------------------------------------------------------------------------*/
 
 
@@ -18,6 +20,7 @@ UInv_InventoryItem* FInv_ItemManifest::Manifest(UObject* NewOuter, UInv_ItemComp
 {
 	// Load values from the data asset first
 	if (EntryIndex != INDEX_NONE) InitializeFromDataAsset();
+	ConstructManifestDisplayFragments();
 	
 	UInv_InventoryItem* Item = NewObject<UInv_InventoryItem>(NewOuter, UInv_InventoryItem::StaticClass());
 	
@@ -50,6 +53,107 @@ int32 FInv_ItemManifest::GetItemAttributeValue(FGameplayTag AttributeTag) const
 		}
 	}
 	return 0;
+}
+
+void FInv_ItemManifest::EmptyManifestDisplayFragments()
+{
+	DisplayFragments.Empty();
+}
+
+void FInv_ItemManifest::RefreshManifestDisplayFragments()
+{
+	EmptyManifestDisplayFragments();
+	ConstructManifestDisplayFragments();
+}
+
+void FInv_ItemManifest::ConstructManifestDisplayFragments()
+{
+	TryMakeItemNameDisplayFragment();
+	TryMakeItemDescriptionDisplayFragment();
+	TryMakeItemSellValueDisplayFragment();
+	TryMakeItemStarsDisplayFragment();
+	TryMakeItemTypeRarityDisplayFragment();
+	TryMakeItemIconDisplayFragment();
+	TryMakeItemGridDisplayFragment();
+}
+
+void FInv_ItemManifest::TryMakeItemNameDisplayFragment()
+{
+	if (ItemName.IsEmpty()) return;							// Empty, continue.
+	
+	FInv_TextFragment Fragment;
+	Fragment.SetFragmentTag(FGameplayTag::RequestGameplayTag(FName("FragmentTags.ItemNameFragment")));
+	Fragment.SetText(ItemName);
+	
+	DisplayFragments.Add(TInstancedStruct<FInv_ItemFragment>::Make<FInv_TextFragment>(Fragment));
+}
+
+void FInv_ItemManifest::TryMakeItemDescriptionDisplayFragment()
+{
+	if (ItemDescription.IsEmpty()) return;					// Empty, continue.
+	FInv_TextFragment Fragment;
+	Fragment.SetFragmentTag(FGameplayTag::RequestGameplayTag(FName("FragmentTags.FlavorTextFragment")));
+	Fragment.SetText(ItemDescription);
+	
+	DisplayFragments.Add(TInstancedStruct<FInv_ItemFragment>::Make<FInv_TextFragment>(Fragment));
+}
+
+void FInv_ItemManifest::TryMakeItemTypeRarityDisplayFragment()
+{
+
+	// TODO: Optimize and add Tag Weapon String
+	
+	FInv_TextFragment Fragment;
+	Fragment.SetFragmentTag(FGameplayTag::RequestGameplayTag(FName("FragmentTags.ItemTypeFragment")));
+	Fragment.bPrefixWithRarity = true;
+	Fragment.SetText(UInv_WidgetUtils::GetItemTypeNameFromTag(ItemType));
+	
+	DisplayFragments.Add(TInstancedStruct<FInv_ItemFragment>::Make<FInv_TextFragment>(Fragment));
+}
+
+void FInv_ItemManifest::TryMakeItemStarsDisplayFragment()
+{
+	if (ItemStars == EInv_ItemStar::NoStars) return;		// Empty, continue.
+	
+	FInv_EnumFragment Fragment;
+	Fragment.SetFragmentTag(FGameplayTag::RequestGameplayTag(FName("FragmentTags.StarsFragment")));
+
+	DisplayFragments.Add(TInstancedStruct<FInv_ItemFragment>::Make<FInv_EnumFragment>(Fragment));
+}
+
+void FInv_ItemManifest::TryMakeItemSellValueDisplayFragment()
+{
+	if (SellValue == 0) return;								// Empty, continue.
+	
+	FInv_LabeledNumberFragment Fragment;
+	Fragment.SetFragmentTag(FGameplayTag::RequestGameplayTag(FName("FragmentTags.SellValueFragment")));
+	Fragment.LabelColor = EInv_Colors::UIWhite;
+	Fragment.ValueColor = EInv_Colors::LegendaryYellow;
+	Fragment.SetLabelText(FText::FromString(TEXT("Sell Value: ")));
+	Fragment.SetLabelValue(SellValue);
+
+	DisplayFragments.Add(TInstancedStruct<FInv_ItemFragment>::Make<FInv_LabeledNumberFragment>(Fragment));
+}
+
+void FInv_ItemManifest::TryMakeItemIconDisplayFragment()
+{
+	if (ItemIcon == nullptr) return;
+	
+	FInv_ImageFragment Fragment;
+	Fragment.SetFragmentTag(FGameplayTag::RequestGameplayTag(FName("FragmentTags.IconFragment")));
+	Fragment.SetIcon(ItemIcon.Get());
+	Fragment.SetIconDimensions(FVector2D(ItemIcon->GetImportedSize()));
+
+	DisplayFragments.Add(TInstancedStruct<FInv_ItemFragment>::Make<FInv_ImageFragment>(Fragment));
+}
+
+void FInv_ItemManifest::TryMakeItemGridDisplayFragment()
+{
+	FInv_GridFragment Fragment;
+	Fragment.SetFragmentTag(FGameplayTag::RequestGameplayTag(FName("FragmentTags.GridFragment")));
+	Fragment.SetGridSize(GridSize);
+	
+	DisplayFragments.Add(TInstancedStruct<FInv_ItemFragment>::Make<FInv_GridFragment>(Fragment));
 }
 
 void FInv_ItemManifest::ForEachFragmentSetOwningManifest(FInv_ItemManifest* InManifest)

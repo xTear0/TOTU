@@ -79,7 +79,7 @@ private:
 	FIntPoint GridSize{1, 1};
 	
 	UPROPERTY(EditAnywhere, Category = "Inventory")
-	float GridPadding{0.f};
+	float GridPadding{4.f};
 };
 
 /*-------------------------------------------------------------------------*/
@@ -104,11 +104,13 @@ struct FInv_ImageFragment : public FInv_InventoryItemFragment
 	GENERATED_BODY()
 
 	UTexture2D* GetIcon() const { return Icon; }
+	void SetIcon(UTexture2D* InIcon) { Icon = InIcon; }
+	void SetIconDimensions(FVector2D Dimensions) { IconDimensions = Dimensions; }
 	virtual void Assimilate(UInv_CompositeBase* Composite) const override;
 	
 private:
 	UPROPERTY(EditAnywhere, Category = "Inventory")
-	TObjectPtr<UTexture2D> Icon{nullptr};
+	UTexture2D* Icon{nullptr};
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	FVector2D IconDimensions{44.f, 44.f};
@@ -119,17 +121,9 @@ struct FInv_TextFragment : public FInv_InventoryItemFragment
 {
 	GENERATED_BODY()
 	virtual void Manifest() override;
-	FText GetText() const { return FragmentText;}
+	FText GetText() const { return FragmentText; }
 	void SetText(const FText& Text) { FragmentText = Text; }
 	virtual void Assimilate(UInv_CompositeBase* Composite) const override;
-	
-private:
-	
-	UPROPERTY(EditAnywhere, Category = "Inventory")
-	FText FragmentText;
-
-	UPROPERTY(EditAnywhere, Category = "Inventory")
-	EInv_Colors TextColor{EInv_Colors::UITan};
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	bool bUseItemNameForText{false};
@@ -142,6 +136,14 @@ private:
 	
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	bool bOverrideRarityTextColor{false};
+	
+private:
+	
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	FText FragmentText;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	EInv_Colors TextColor{EInv_Colors::UITan};
 };
 
 USTRUCT(BlueprintType)
@@ -154,17 +156,10 @@ struct FInv_LabeledNumberFragment : public FInv_InventoryItemFragment
 
 	float GetValue() const;
 	float GetEffectLevel() const { return EffectLevel; }
-	
-private:
-	UPROPERTY(EditAnywhere, Category = "Inventory")
-	float Value{0.f};
 
-	UPROPERTY(EditAnywhere, Category = "Inventory")
-	float EffectLevel{};
+	void SetLabelText(const FText& InText) { Text_Label = InText; }
+	void SetLabelValue(const float& InValue) { Value = InValue; }
 	
-	UPROPERTY(EditAnywhere, Category = "Inventory")
-	FText Text_Label;
-
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	EInv_Colors LabelColor{EInv_Colors::UIWhite};
 
@@ -179,6 +174,16 @@ private:
 
 	UPROPERTY(EditAnywhere, Category =  "Inventory")
 	bool bCollapseValue{false};
+	
+private:
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	float Value{0.f};
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	float EffectLevel{0.f};
+	
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	FText Text_Label;
 };
 
 USTRUCT(BlueprintType)

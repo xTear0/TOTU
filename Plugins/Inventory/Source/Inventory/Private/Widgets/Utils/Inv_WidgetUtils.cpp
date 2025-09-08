@@ -139,15 +139,15 @@ FText UInv_WidgetUtils::GetPrefixFromRarityEnum(EInv_ItemRarity RequestedRarity)
 {
 	switch (RequestedRarity)
 	{
-	case EInv_ItemRarity::Supreme:        return FText::FromString(TEXT("Supreme"));
-	case EInv_ItemRarity::Mythical:		  return FText::FromString(TEXT("Mythical"));
-	case EInv_ItemRarity::Legendary:	  return FText::FromString(TEXT("Legendary"));
-	case EInv_ItemRarity::Epic:	          return FText::FromString(TEXT("Epic"));
-	case EInv_ItemRarity::Rare:	          return FText::FromString(TEXT("Rare"));
-	case EInv_ItemRarity::Uncommon:	      return FText::FromString(TEXT("Uncommon"));
-	case EInv_ItemRarity::Common:	      return FText::FromString(TEXT("Common"));
+	case EInv_ItemRarity::Supreme:        return FText::FromString(TEXT("SUPREME"));
+	case EInv_ItemRarity::Mythical:		  return FText::FromString(TEXT("MYTHICAL"));
+	case EInv_ItemRarity::Legendary:	  return FText::FromString(TEXT("LEGENDARY"));
+	case EInv_ItemRarity::Epic:	          return FText::FromString(TEXT("EPIC"));
+	case EInv_ItemRarity::Rare:	          return FText::FromString(TEXT("RARE"));
+	case EInv_ItemRarity::Uncommon:	      return FText::FromString(TEXT("UNCOMMON"));
+	case EInv_ItemRarity::Common:	      return FText::FromString(TEXT("COMMON"));
 
-	default:                              return FText::FromString(TEXT("Common"));
+	default:                              return FText::FromString(TEXT("NULL"));
 	}
 }
 
@@ -205,6 +205,60 @@ FText UInv_WidgetUtils::GetAttributeTextLabel(FGameplayTag RequestedAttributeTag
 	    return FText::FromString("SHADOW RESIST");
 	else
 	    return FText::FromString("NO TAG");
+}
+
+FText UInv_WidgetUtils::GetItemTypeNameFromTag(FGameplayTag ItemType)
+{
+	if (ItemType.MatchesTag(FGameplayTag::RequestGameplayTag(FName("TOTUItems.Equipment.Weapons.Swords"), false)))
+	{
+		return FText::FromString("SWORD");
+	}
+	if (ItemType.MatchesTag(FGameplayTag::RequestGameplayTag(FName("TOTUItems.Equipment.Weapons.Hammers"), false)))
+	{
+		return FText::FromString("HAMMER");
+	}
+	if (ItemType.MatchesTag(FGameplayTag::RequestGameplayTag(FName("TOTUItems.Equipment.Weapons.Staffs"), false)))
+	{
+		return FText::FromString("STAFF");
+	}
+	if (ItemType.MatchesTag(FGameplayTag::RequestGameplayTag(FName("TOTUItems.Equipment.Weapons.Maces"), false)))
+	{
+		return FText::FromString("MACE");
+	}
+	if (ItemType.MatchesTag(FGameplayTag::RequestGameplayTag(FName("TOTUItems.Equipment.Weapons.Bows"), false)))
+	{
+		return FText::FromString("BOW");
+	}
+	if (ItemType.MatchesTag(FGameplayTag::RequestGameplayTag(FName("TOTUItems.Equipment.Weapons.Shields"), false)))
+	{
+		return FText::FromString("SHIELD");
+	}
+	if (ItemType.MatchesTag(FGameplayTag::RequestGameplayTag(FName("TOTUItems.Equipment.Weapons"), false)))
+	{
+		return FText::FromString("WEAPON");
+	}
+	if (ItemType.MatchesTag(FGameplayTag::RequestGameplayTag(FName("TOTUItems.Equipment.Helmets"), false)))
+	{
+		return FText::FromString("HELMET");
+	}
+	if (ItemType.MatchesTag(FGameplayTag::RequestGameplayTag(FName("TOTUItems.Equipment.Belts"), false)))
+	{
+		return FText::FromString("BELT");
+	}
+	if (ItemType.MatchesTag(FGameplayTag::RequestGameplayTag(FName("TOTUItems.Equipment.Gauntlets"), false)))
+	{
+		return FText::FromString("GAUNTLETS");
+	}
+	if (ItemType.MatchesTag(FGameplayTag::RequestGameplayTag(FName("TOTUItems.Equipment.Greaves"), false)))
+	{
+		return FText::FromString("GREAVES");
+	}
+	if (ItemType.MatchesTag(FGameplayTag::RequestGameplayTag(FName("TOTUItems.Equipment.Chestplates"), false)))
+	{
+		return FText::FromString("CHESTPLATE");
+	}
+	
+	return FText::FromString("ITEM");
 }
 
 FText UInv_WidgetUtils::GetAttributeTextName(FGameplayTag RequestedAttributeTag)

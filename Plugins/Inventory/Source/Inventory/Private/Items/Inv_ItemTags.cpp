@@ -14,32 +14,48 @@ namespace TOTUItems
 	{
 		namespace Weapons
 		{
-			// Supreme
-			UE_DEFINE_GAMEPLAY_TAG(Peril, "TOTUItems.Equipment.Weapons.Peril")
-			// Mythical
-			UE_DEFINE_GAMEPLAY_TAG(SceptreOfArcturus, "TOTUItems.Equipment.Weapons.SceptreOfArcturus")
-			UE_DEFINE_GAMEPLAY_TAG(HellforgeHammer, "TOTUItems.Equipment.Weapons.HellforgeHammer")
-			UE_DEFINE_GAMEPLAY_TAG(Hrunting, "TOTUItems.Equipment.Weapons.Hrunting")
-			// Legendary
-			UE_DEFINE_GAMEPLAY_TAG(Deathripper, "TOTUItems.Equipment.Weapons.Deathripper")
-			UE_DEFINE_GAMEPLAY_TAG(RodOfRuin, "TOTUItems.Equipment.Weapons.RodOfRuin")
-			UE_DEFINE_GAMEPLAY_TAG(HammerOfLight, "TOTUItems.Equipment.Weapons.HammerOfLight")
-			// Epic
-			UE_DEFINE_GAMEPLAY_TAG(RuneworkShield, "TOTUItems.Equipment.Weapons.RuneworkShield")
-			UE_DEFINE_GAMEPLAY_TAG(WandOfWarping, "TOTUItems.Equipment.Weapons.WandOfWarping")
-			UE_DEFINE_GAMEPLAY_TAG(VorpalSword, "TOTUItems.Equipment.Weapons.VorpalSword")
-			// Rare 
-			UE_DEFINE_GAMEPLAY_TAG(SpectralBlade, "TOTUItems.Equipment.Weapons.SpectralBlade")
-			UE_DEFINE_GAMEPLAY_TAG(MaceOfAmethyst, "TOTUItems.Equipment.Weapons.MaceOfAmethyst")
-			UE_DEFINE_GAMEPLAY_TAG(NightshadeRecurve, "TOTUItems.Equipment.Weapons.NightshadeRecurve")
-			// Uncommon
-			UE_DEFINE_GAMEPLAY_TAG(MoonlightCrescent, "TOTUItems.Equipment.Weapons.MoonlightCrescent")
-			UE_DEFINE_GAMEPLAY_TAG(MoltenHilt, "TOTUItems.Equipment.Weapons.MoltenHilt")
-			UE_DEFINE_GAMEPLAY_TAG(ArcaneStaff, "TOTUItems.Equipment.Weapons.ArcaneStaff")
-			// Common
-			UE_DEFINE_GAMEPLAY_TAG(AncientSword, "TOTUItems.Equipment.Weapons.AncientSword")
-			UE_DEFINE_GAMEPLAY_TAG(GuardKeeper, "TOTUItems.Equipment.Weapons.GuardKeeper")
-			UE_DEFINE_GAMEPLAY_TAG(ScavengerMace, "TOTUItems.Equipment.Weapons.ScavengerMace")
+			namespace Swords
+			{
+				UE_DEFINE_GAMEPLAY_TAG(Peril, "TOTUItems.Equipment.Weapons.Swords.Peril")
+				UE_DEFINE_GAMEPLAY_TAG(Hrunting, "TOTUItems.Equipment.Weapons.Swords.Hrunting")
+				UE_DEFINE_GAMEPLAY_TAG(Deathripper, "TOTUItems.Equipment.Weapons.Swords.Deathripper")
+				UE_DEFINE_GAMEPLAY_TAG(VorpalSword, "TOTUItems.Equipment.Weapons.Swords.VorpalSword")
+				UE_DEFINE_GAMEPLAY_TAG(SpectralBlade, "TOTUItems.Equipment.Weapons.Swords.SpectralBlade")
+				UE_DEFINE_GAMEPLAY_TAG(MoonlightCrescent, "TOTUItems.Equipment.Weapons.Swords.MoonlightCrescent")
+				UE_DEFINE_GAMEPLAY_TAG(MoltenHilt, "TOTUItems.Equipment.Weapons.Swords.MoltenHilt")
+				UE_DEFINE_GAMEPLAY_TAG(AncientSword, "TOTUItems.Equipment.Weapons.Swords.AncientSword")
+			}
+
+			namespace Hammers
+			{
+				UE_DEFINE_GAMEPLAY_TAG(HellforgeHammer, "TOTUItems.Equipment.Weapons.Hammers.HellforgeHammer")
+				UE_DEFINE_GAMEPLAY_TAG(HammerOfLight, "TOTUItems.Equipment.Weapons.Hammers.HammerOfLight")
+			}
+
+			namespace Staffs
+			{
+				UE_DEFINE_GAMEPLAY_TAG(SceptreOfArcturus, "TOTUItems.Equipment.Weapons.Staffs.SceptreOfArcturus")
+				UE_DEFINE_GAMEPLAY_TAG(RodOfRuin, "TOTUItems.Equipment.Weapons.Staffs.RodOfRuin")
+				UE_DEFINE_GAMEPLAY_TAG(WandOfWarping, "TOTUItems.Equipment.Weapons.Staffs.WandOfWarping")
+				UE_DEFINE_GAMEPLAY_TAG(ArcaneStaff, "TOTUItems.Equipment.Weapons.Staffs.ArcaneStaff")
+			}
+
+			namespace Maces
+			{
+				UE_DEFINE_GAMEPLAY_TAG(MaceOfAmethyst, "TOTUItems.Equipment.Weapons.Maces.MaceOfAmethyst")
+				UE_DEFINE_GAMEPLAY_TAG(ScavengerMace, "TOTUItems.Equipment.Weapons.Maces.ScavengerMace")
+			}
+
+			namespace Bows
+			{
+				UE_DEFINE_GAMEPLAY_TAG(NightshadeRecurve, "TOTUItems.Equipment.Weapons.Bows.NightshadeRecurve")
+			}
+			
+			namespace Shields
+			{
+				UE_DEFINE_GAMEPLAY_TAG(RuneworkShield, "TOTUItems.Equipment.Weapons.Shields.RuneworkShield")
+				UE_DEFINE_GAMEPLAY_TAG(GuardKeeper, "TOTUItems.Equipment.Weapons.Shields.GuardKeeper")
+			}
 		}
 		namespace Helmets
 		{

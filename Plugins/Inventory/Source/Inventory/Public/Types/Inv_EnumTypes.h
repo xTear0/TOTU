@@ -35,6 +35,7 @@ enum class EInv_ItemRarity : uint8
 UENUM(BlueprintType)
 enum class EInv_ItemStar : uint8
 {
+	NoStars,
 	OneStar,
 	TwoStar,
 	ThreeStar,

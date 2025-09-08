@@ -15,32 +15,48 @@ namespace TOTUItems
 	{
 		namespace Weapons
 		{
-			// Supreme
-			UE_DECLARE_GAMEPLAY_TAG_EXTERN(Peril)
-			// Mythical
-			UE_DECLARE_GAMEPLAY_TAG_EXTERN(SceptreOfArcturus)
-			UE_DECLARE_GAMEPLAY_TAG_EXTERN(HellforgeHammer)
-			UE_DECLARE_GAMEPLAY_TAG_EXTERN(Hrunting)
-			// Legendary
-			UE_DECLARE_GAMEPLAY_TAG_EXTERN(Deathripper)
-			UE_DECLARE_GAMEPLAY_TAG_EXTERN(RodOfRuin)
-			UE_DECLARE_GAMEPLAY_TAG_EXTERN(HammerOfLight)
-			// Epic
-			UE_DECLARE_GAMEPLAY_TAG_EXTERN(RuneworkShield)
-			UE_DECLARE_GAMEPLAY_TAG_EXTERN(WandOfWarping)
-			UE_DECLARE_GAMEPLAY_TAG_EXTERN(VorpalSword)
-			// Rare 
-			UE_DECLARE_GAMEPLAY_TAG_EXTERN(SpectralBlade)
-			UE_DECLARE_GAMEPLAY_TAG_EXTERN(MaceOfAmethyst)
-			UE_DECLARE_GAMEPLAY_TAG_EXTERN(NightshadeRecurve)
-			// Uncommon
-			UE_DECLARE_GAMEPLAY_TAG_EXTERN(MoonlightCrescent)
-			UE_DECLARE_GAMEPLAY_TAG_EXTERN(MoltenHilt)
-			UE_DECLARE_GAMEPLAY_TAG_EXTERN(ArcaneStaff)
-			// Common
-			UE_DECLARE_GAMEPLAY_TAG_EXTERN(AncientSword)
-			UE_DECLARE_GAMEPLAY_TAG_EXTERN(GuardKeeper)
-			UE_DECLARE_GAMEPLAY_TAG_EXTERN(ScavengerMace)
+			namespace Swords
+			{
+				UE_DECLARE_GAMEPLAY_TAG_EXTERN(Peril)
+				UE_DECLARE_GAMEPLAY_TAG_EXTERN(Deathripper)
+				UE_DECLARE_GAMEPLAY_TAG_EXTERN(Hrunting)
+				UE_DECLARE_GAMEPLAY_TAG_EXTERN(MoltenHilt)
+				UE_DECLARE_GAMEPLAY_TAG_EXTERN(SpectralBlade)
+				UE_DECLARE_GAMEPLAY_TAG_EXTERN(VorpalSword)
+				UE_DECLARE_GAMEPLAY_TAG_EXTERN(MoonlightCrescent)
+				UE_DECLARE_GAMEPLAY_TAG_EXTERN(AncientSword)
+			}
+
+			namespace Hammers
+			{
+				UE_DECLARE_GAMEPLAY_TAG_EXTERN(Cursebreaker)
+				UE_DECLARE_GAMEPLAY_TAG_EXTERN(HammerOfLight)
+			}
+			
+			namespace Staffs
+			{
+				UE_DECLARE_GAMEPLAY_TAG_EXTERN(ArcaneStaff)
+				UE_DECLARE_GAMEPLAY_TAG_EXTERN(SceptreOfArcturus)
+				UE_DECLARE_GAMEPLAY_TAG_EXTERN(RodOfRuin)
+				UE_DECLARE_GAMEPLAY_TAG_EXTERN(WandOfWarping)
+			}
+
+			namespace Maces
+			{
+				UE_DECLARE_GAMEPLAY_TAG_EXTERN(MaceOfAmethyst)
+				UE_DECLARE_GAMEPLAY_TAG_EXTERN(ScavengerMace)
+			}
+
+			namespace Bows
+			{
+				UE_DECLARE_GAMEPLAY_TAG_EXTERN(NightshadeRecurve)
+			}
+			
+			namespace Shields
+			{
+				UE_DECLARE_GAMEPLAY_TAG_EXTERN(RuneworkShield)
+				UE_DECLARE_GAMEPLAY_TAG_EXTERN(GuardKeeper)
+			}
 		}
 		namespace Helmets
 		{

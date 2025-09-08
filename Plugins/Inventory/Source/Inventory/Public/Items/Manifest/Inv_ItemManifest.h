@@ -56,7 +56,7 @@ struct INVENTORY_API FInv_ItemManifest
 	
 	// Getters for Equipped Item Payload
 	FText GetItemName() const { return ItemName; }
-	FText GetItemDescription() const { return ItemDescription; }\
+	FText GetItemDescription() const { return ItemDescription; }
 	EInv_ItemStar GetItemStars() const { return ItemStars; }
 	TArray<FInv_ItemAttributePair> GetItemAttributes() const { return ItemAttributesContainer; }
 	TArray<FInv_ItemAbilityPair> GetItemAbilities() const { return ItemAbilitiesContainer; }
@@ -67,6 +67,26 @@ struct INVENTORY_API FInv_ItemManifest
 	int32 GetItemSellValue() const { return SellValue; }
 	FGameplayTag GetItemType() const { return ItemType; }
 	int32 GetItemAttributeValue(FGameplayTag AttributeTag) const;
+
+	// Automatic Display Builder
+	void ConstructManifestDisplayFragments();
+	void EmptyManifestDisplayFragments();
+	void RefreshManifestDisplayFragments();
+
+	// Adds each of the following to array of Display Fragments
+	void TryMakeItemNameDisplayFragment();			// Text Fragment
+	void TryMakeItemDescriptionDisplayFragment();	// Text Fragment
+	
+	void TryMakeItemStarsDisplayFragment();		// Enum Fragment
+
+	void TryMakeItemTypeRarityDisplayFragment();	// Text Fragment
+
+	void TryMakeItemSellValueDisplayFragment();	// Labeled Number Fragment
+	void TryMakeItemIconDisplayFragment();			// Image Fragment
+	void TryMakeItemGridDisplayFragment();			// Grid Fragment
+	
+	
+	
 	
 	// Create a reference back to the Owning Manifest for the Fragments.
 	void ForEachFragmentSetOwningManifest(FInv_ItemManifest* InManifest); // Sets all Fragment Owning Manifest
@@ -95,15 +115,21 @@ private:
 	
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	int32 EntryIndex = INDEX_NONE;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	TObjectPtr<UTexture2D> ItemIcon{nullptr};
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	FIntPoint GridSize{1, 1};
 	
 	UPROPERTY(EditAnywhere, Category = "Inventory")
-	FText ItemName;
+	FText ItemName= FText::GetEmpty();;
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
-	FText ItemDescription;
+	FText ItemDescription= FText::GetEmpty();;
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
-	EInv_ItemStar ItemStars{EInv_ItemStar::OneStar};
+	EInv_ItemStar ItemStars{EInv_ItemStar::NoStars};
 	
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TArray<FInv_ItemAttributePair> ItemAttributesContainer;

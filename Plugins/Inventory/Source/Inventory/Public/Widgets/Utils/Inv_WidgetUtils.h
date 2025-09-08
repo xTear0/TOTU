@@ -42,8 +42,11 @@ public:
 	static FText GetPrefixFromRarityEnum(EInv_ItemRarity RequestedRarity);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	static FText GetItemTypeNameFromTag(FGameplayTag ItemType);
+	
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	static FText GetAttributeTextLabel(FGameplayTag RequestedAttributeTag);
-
+	
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	static FText GetAttributeTextName(FGameplayTag RequestedAttributeTag);
 	
