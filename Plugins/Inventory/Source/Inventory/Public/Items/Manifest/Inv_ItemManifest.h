@@ -71,22 +71,19 @@ struct INVENTORY_API FInv_ItemManifest
 	// Automatic Display Builder
 	void ConstructManifestDisplayFragments();
 	void EmptyManifestDisplayFragments();
+	void AddExtraManifestDisplayFragments();
 	void RefreshManifestDisplayFragments();
 
 	// Adds each of the following to array of Display Fragments
 	void TryMakeItemNameDisplayFragment();			// Text Fragment
 	void TryMakeItemDescriptionDisplayFragment();	// Text Fragment
-	
-	void TryMakeItemStarsDisplayFragment();		// Enum Fragment
-
+	void TryMakeItemStarsDisplayFragment();			// Enum Fragment
 	void TryMakeItemTypeRarityDisplayFragment();	// Text Fragment
-
-	void TryMakeItemSellValueDisplayFragment();	// Labeled Number Fragment
+	void TryMakeItemSellValueDisplayFragment();		// Labeled Number Fragment
 	void TryMakeItemIconDisplayFragment();			// Image Fragment
 	void TryMakeItemGridDisplayFragment();			// Grid Fragment
-	
-	
-	
+
+	FVector2D GetIconDimensionsFromRatio(FIntPoint GridSize);
 	
 	// Create a reference back to the Owning Manifest for the Fragments.
 	void ForEachFragmentSetOwningManifest(FInv_ItemManifest* InManifest); // Sets all Fragment Owning Manifest
@@ -120,7 +117,7 @@ private:
 	TObjectPtr<UTexture2D> ItemIcon{nullptr};
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
-	FIntPoint GridSize{1, 1};
+	FIntPoint ItemSize{1, 1};
 	
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	FText ItemName= FText::GetEmpty();;
@@ -150,13 +147,15 @@ private:
 	int32 SellValue = 0;
 
 	UPROPERTY(EditAnywhere, Category = "Inventory", meta = (ExcludeBaseStruct))
-	TArray<TInstancedStruct<FInv_ItemFragment>> DisplayFragments;
+	TArray<TInstancedStruct<FInv_ItemFragment>> ExtraFragments;
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TSubclassOf<AActor> PickupActorClass;
 
+	UPROPERTY()
+	TArray<TInstancedStruct<FInv_ItemFragment>> DisplayFragments;
+
 	void InitializeFromDataAsset();
-	void ClearFragments();
 };
 /*-------------------------------------------------------------------------*/
 

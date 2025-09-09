@@ -26,11 +26,20 @@ struct FInv_ItemEntry
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
-	FText ItemName;
+	TObjectPtr<UTexture2D> ItemIcon{nullptr};
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
-	FText ItemDescription;
+	FIntPoint ItemSize{1, 1};
+	
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	FText ItemName= FText::GetEmpty();;
 
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	FText ItemDescription= FText::GetEmpty();;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	EInv_ItemStar ItemStars{EInv_ItemStar::NoStars};
+	
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TArray<FInv_ItemAttributePair> ItemAttributesContainer;
 
@@ -50,7 +59,7 @@ struct FInv_ItemEntry
 	int32 SellValue = 0;
 
 	UPROPERTY(EditAnywhere, Category = "Inventory", meta = (ExcludeBaseStruct))
-	TArray<TInstancedStruct<FInv_ItemFragment>> DisplayFragments;
+	TArray<TInstancedStruct<FInv_ItemFragment>> ExtraFragments;
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TSubclassOf<AActor> PickupActorClass;
@@ -70,7 +79,7 @@ class INVENTORY_API UInv_ItemDataAsset : public UDataAsset
 	
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TArray<FInv_ItemEntry> ItemEntries;
+	TArray<FInv_ItemEntry> Entries;
 };
 #pragma endregion
 /*-------------------------------------------------------------------------*/

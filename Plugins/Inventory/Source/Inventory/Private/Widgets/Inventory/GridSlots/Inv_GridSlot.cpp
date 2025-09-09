@@ -49,15 +49,17 @@ UInv_ItemPopUp* UInv_GridSlot::GetItemPopUp() const
 	return ItemPopUp.Get();
 }
 
-void UInv_GridSlot::SetOccupiedTexture()
+void UInv_GridSlot::SetOccupiedTexture(const FLinearColor& OverlayColor)
 {
 	GridSlotState = EInv_GridSlotState::Occupied;
+	if (OverlayColor != FLinearColor::White) Image_GridSlot->SetColorAndOpacity(OverlayColor);
 	Image_GridSlot->SetBrush(Brush_Occupied);
 }
 
 void UInv_GridSlot::SetUnoccupiedTexture()
 {
 	GridSlotState = EInv_GridSlotState::Unoccupied;
+	Image_GridSlot->SetColorAndOpacity(FLinearColor::White);
 	Image_GridSlot->SetBrush(Brush_Unoccupied);
 }
 

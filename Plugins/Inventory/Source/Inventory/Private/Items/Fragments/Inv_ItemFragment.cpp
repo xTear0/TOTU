@@ -121,8 +121,6 @@ void FInv_ImageFragment::Assimilate(UInv_CompositeBase* Composite) const
 	Image->SetImageSize(IconDimensions);
 }
 
-
-
 void FInv_TextFragment::Assimilate(UInv_CompositeBase* Composite) const
 {
 	FInv_InventoryItemFragment::Assimilate(Composite);
@@ -338,58 +336,189 @@ void FInv_EquipmentFragment::Manifest()
 
 AInv_EquipActor* FInv_EquipmentFragment::SpawnAttachedActor(USkeletalMeshComponent* AttachMesh, bool bProxy) const
 {
-	if (!IsValid(EquipActorClass) || !IsValid(AttachMesh))
-		return nullptr;
+    // Early validation
+    if (!IsValid(EquipActorClass) || !IsValid(AttachMesh))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Invalid EquipActorClass or AttachMesh in SpawnAttachedActor"));
+        return nullptr;
+    }
 
-	AInv_EquipActor* SpawnedActor = AttachMesh->GetWorld()->SpawnActor<AInv_EquipActor>(EquipActorClass);
-	if (!IsValid(SpawnedActor))
-		return nullptr;
+    // Create the equipment actor
+    AInv_EquipActor* SpawnedActor = CreateEquipmentActor(AttachMesh);
+    if (!IsValid(SpawnedActor))
+    {
+        return nullptr;
+    }
 
-	// Default attach
-	SpawnedActor->AttachToComponent(AttachMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+    // Attach actor to the mesh
+    AttachActorToMesh(SpawnedActor, AttachMesh);
 
-	// If this is a proxy, skip skeletal binding logic
-	if (bProxy)
-	{
-		if (USceneComponent* BindMeshProxyComponent = Cast<USceneComponent>(
-			AttachMesh->GetOwner()->FindComponentByTag(USkeletalMeshComponent::StaticClass(), FName("BindMesh"))))
-		{
-			SpawnedActor->AttachToComponent(BindMeshProxyComponent, FAttachmentTransformRules::SnapToTargetIncludingScale, SocketAttachPoint);
-		}
-		if (!bIsWeapon)
-		{
-			USkeletalMeshComponent* BindMeshProxySKM = Cast<USkeletalMeshComponent>(AttachMesh->GetOwner()->FindComponentByTag(USkeletalMeshComponent::StaticClass(), FName("BindMesh")));
-			USkeletalMeshComponent* AddedActorSKM = Cast<USkeletalMeshComponent>(SpawnedActor->GetComponentByClass(USkeletalMeshComponent::StaticClass()));
-			AddedActorSKM->SetLeaderPoseComponent(BindMeshProxySKM);
-		}
-		return SpawnedActor;
-	}
+    // Handle binding logic based on proxy state
+    if (bProxy)
+    {
+        HandleProxyBinding(SpawnedActor, AttachMesh);
+    }
+    else
+    {
+        HandleStandardBinding(SpawnedActor, AttachMesh);
+    }
 
-	// Try to bind the skeletal mesh to the character's master pose
-	if (USkeletalMeshComponent* AddedActorSKM = Cast<USkeletalMeshComponent>(
-		SpawnedActor->GetComponentByClass(USkeletalMeshComponent::StaticClass())))
-	{
-		USkeletalMeshComponent* BindMeshSKM = Cast<USkeletalMeshComponent>(
-			AttachMesh->GetOwner()->FindComponentByTag(USkeletalMeshComponent::StaticClass(), FName("BindMesh")));
-		USkeletalMeshComponent* BindWeaponSKM = Cast<USkeletalMeshComponent>(
-			AttachMesh->GetOwner()->FindComponentByTag(USkeletalMeshComponent::StaticClass(), FName("BindWeapon")));
+    return SpawnedActor;
+}
 
-		if (BindMeshSKM)
-		{
-			AddedActorSKM->SetLeaderPoseComponent(BindMeshSKM);
-		}
+AInv_EquipActor* FInv_EquipmentFragment::CreateEquipmentActor(USkeletalMeshComponent* AttachMesh) const
+{
+    UWorld* World = AttachMesh->GetWorld();
+    if (!IsValid(World))
+    {
+        UE_LOG(LogTemp, Error, TEXT("Invalid World when spawning equipment actor"));
+        return nullptr;
+    }
 
-		// Handle weapon override
-		if (bIsWeapon && BindWeaponSKM)
-		{
-			USkeletalMesh* WeaponMesh = AddedActorSKM->GetSkeletalMeshAsset();
-			BindWeaponSKM->SetSkeletalMesh(WeaponMesh);
-			AddedActorSKM->SetVisibility(false);
-			BindWeaponSKM->SetVisibility(true);
-		}
-	}
+    AInv_EquipActor* SpawnedActor = World->SpawnActor<AInv_EquipActor>(EquipActorClass);
+    if (!IsValid(SpawnedActor))
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to spawn equipment actor of class: %s"), 
+               EquipActorClass ? *EquipActorClass->GetName() : TEXT("NULL"));
+    }
 
-	return SpawnedActor;
+    return SpawnedActor;
+}
+
+USkeletalMeshComponent* FInv_EquipmentFragment::FindComponentByTag(AActor* Owner, const FName& Tag) const
+{
+    if (!IsValid(Owner))
+    {
+        return nullptr;
+    }
+
+    UActorComponent* FoundComponent = Owner->FindComponentByTag(USkeletalMeshComponent::StaticClass(), Tag);
+    return Cast<USkeletalMeshComponent>(FoundComponent);
+}
+
+void FInv_EquipmentFragment::AttachActorToMesh(AInv_EquipActor* Actor, USkeletalMeshComponent* AttachMesh) const
+{
+    if (!IsValid(Actor) || !IsValid(AttachMesh))
+    {
+        return;
+    }
+
+    // Use consistent attachment rules
+    const FAttachmentTransformRules AttachRules = FAttachmentTransformRules::SnapToTargetNotIncludingScale;
+    Actor->AttachToComponent(AttachMesh, AttachRules);
+}
+
+void FInv_EquipmentFragment::HandleProxyBinding(AInv_EquipActor* SpawnedActor, USkeletalMeshComponent* AttachMesh) const
+{
+    if (!IsValid(SpawnedActor) || !IsValid(AttachMesh))
+    {
+        return;
+    }
+
+    AActor* Owner = AttachMesh->GetOwner();
+    USkeletalMeshComponent* BindMeshProxy = FindComponentByTag(Owner, FName("BindMesh"));
+    
+    if (!IsValid(BindMeshProxy))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("BindMesh component not found for proxy binding"));
+        return;
+    }
+
+    // Reattach to the bind mesh with the correct socket
+    const FAttachmentTransformRules SocketAttachRules = FAttachmentTransformRules::SnapToTargetIncludingScale;
+    SpawnedActor->AttachToComponent(BindMeshProxy, SocketAttachRules, SocketAttachPoint);
+
+    // Set up master pose for non-weapon items
+    if (!bIsWeapon)
+    {
+        USkeletalMeshComponent* ActorMesh = Cast<USkeletalMeshComponent>(
+            SpawnedActor->GetComponentByClass(USkeletalMeshComponent::StaticClass()));
+        
+        SetupMasterPoseBinding(ActorMesh, BindMeshProxy);
+    }
+}
+
+void FInv_EquipmentFragment::HandleStandardBinding(AInv_EquipActor* SpawnedActor, USkeletalMeshComponent* AttachMesh) const
+{
+    if (!IsValid(SpawnedActor) || !IsValid(AttachMesh))
+    {
+        return;
+    }
+
+    USkeletalMeshComponent* ActorMesh = Cast<USkeletalMeshComponent>(
+        SpawnedActor->GetComponentByClass(USkeletalMeshComponent::StaticClass()));
+    
+    if (!IsValid(ActorMesh))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("No SkeletalMeshComponent found on spawned equipment actor"));
+        return;
+    }
+
+    AActor* Owner = AttachMesh->GetOwner();
+    USkeletalMeshComponent* BindMesh = FindComponentByTag(Owner, FName("BindMesh"));
+    
+    // Set up master pose binding if BindMesh exists
+    if (IsValid(BindMesh))
+    {
+        // If we have a socket attachment point, reattach with proper scaling
+        if (SocketAttachPoint != NAME_None)
+        {
+            const FAttachmentTransformRules SocketAttachRules = FAttachmentTransformRules::SnapToTargetIncludingScale;
+            SpawnedActor->AttachToComponent(BindMesh, SocketAttachRules, SocketAttachPoint);
+        }
+        
+        SetupMasterPoseBinding(ActorMesh, BindMesh);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("BindMesh component not found for standard binding"));
+    }
+
+    // Handle weapon-specific logic
+    if (bIsWeapon)
+    {
+        USkeletalMeshComponent* WeaponBindMesh = FindComponentByTag(Owner, FName("BindWeapon"));
+        if (IsValid(WeaponBindMesh))
+        {
+            HandleWeaponOverride(ActorMesh, WeaponBindMesh);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("BindWeapon component not found for weapon binding"));
+        }
+    }
+}
+
+void FInv_EquipmentFragment::SetupMasterPoseBinding(USkeletalMeshComponent* ActorMesh, USkeletalMeshComponent* LeaderMesh) const
+{
+    if (!IsValid(ActorMesh) || !IsValid(LeaderMesh))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Invalid components for master pose binding"));
+        return;
+    }
+
+    ActorMesh->SetLeaderPoseComponent(LeaderMesh);
+}
+
+void FInv_EquipmentFragment::HandleWeaponOverride(USkeletalMeshComponent* ActorMesh, USkeletalMeshComponent* WeaponBindMesh) const
+{
+    if (!IsValid(ActorMesh) || !IsValid(WeaponBindMesh))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Invalid components for weapon override"));
+        return;
+    }
+
+    USkeletalMesh* WeaponMesh = ActorMesh->GetSkeletalMeshAsset();
+    if (!IsValid(WeaponMesh))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("No skeletal mesh asset found on weapon actor"));
+        return;
+    }
+
+    // Transfer the mesh to the bind component and hide the original
+    WeaponBindMesh->SetSkeletalMesh(WeaponMesh);
+    ActorMesh->SetVisibility(false);
+    WeaponBindMesh->SetVisibility(true);
 }
 
 

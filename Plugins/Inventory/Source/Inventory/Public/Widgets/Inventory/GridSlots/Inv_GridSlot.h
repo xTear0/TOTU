@@ -59,7 +59,7 @@ public:
 	void SetItemPopUp(UInv_ItemPopUp* PopUp);
 	UInv_ItemPopUp* GetItemPopUp() const;
 	
-	void SetOccupiedTexture();
+	void SetOccupiedTexture(const FLinearColor& OverlayColor = FLinearColor::White);
 	void SetUnoccupiedTexture();
 	void SetSelectedTexture();
 	void SetGrayedOutTexture();

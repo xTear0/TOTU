@@ -71,6 +71,22 @@ FLinearColor UInv_WidgetUtils::GetColorFromRarityEnum(EInv_ItemRarity RequestedR
 	}
 }
 
+FLinearColor UInv_WidgetUtils::GetHalfOpacityColorFromRarityEnum(EInv_ItemRarity RequestedRarity)
+{
+	switch (RequestedRarity)
+	{
+	case EInv_ItemRarity::Supreme:        return FLinearColor::FromSRGBColor(FColor::FromHex("FF000680"));
+	case EInv_ItemRarity::Mythical:		  return FLinearColor::FromSRGBColor(FColor::FromHex("FF510080"));
+	case EInv_ItemRarity::Legendary:	  return FLinearColor::FromSRGBColor(FColor::FromHex("FF990080"));
+	case EInv_ItemRarity::Epic:	          return FLinearColor::FromSRGBColor(FColor::FromHex("FF00F580"));
+	case EInv_ItemRarity::Rare:	          return FLinearColor::FromSRGBColor(FColor::FromHex("0003D980"));
+	case EInv_ItemRarity::Uncommon:	      return FLinearColor::FromSRGBColor(FColor::FromHex("00AE0980"));
+	case EInv_ItemRarity::Common:	      return FLinearColor::FromSRGBColor(FColor::FromHex("85675880"));
+
+	default:                              return FLinearColor::FromSRGBColor(FColor::FromHex("85675880"));
+	}
+}
+
 FLinearColor UInv_WidgetUtils::GetColorFromAttributeTag(FGameplayTag RequestedAttributeTag)
 {
 	  // Primary Attributes

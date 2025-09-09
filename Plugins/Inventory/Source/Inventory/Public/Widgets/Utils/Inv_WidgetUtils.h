@@ -36,6 +36,9 @@ public:
 	static FLinearColor GetColorFromRarityEnum(EInv_ItemRarity RequestedRarity);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	static FLinearColor GetHalfOpacityColorFromRarityEnum(EInv_ItemRarity RequestedRarity);
+	
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	static FLinearColor GetColorFromAttributeTag(FGameplayTag RequestedAttributeTag);
 	
 	UFUNCTION(BlueprintCallable, Category = "Inventory")

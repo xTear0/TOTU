@@ -8,11 +8,12 @@
 /*-------------------------------------------------------------------------*/
 
 
-class UOverlay;
-class UInv_EquippedSlottedItem;
+
 /*-------------------------------------------------------------------------*/
 /*   Declarations                                                          */
 /*-------------------------------------------------------------------------*/
+class UOverlay;
+class UInv_EquippedSlottedItem;
 class UImage;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FEquippedGridSlotClicked, UInv_EquippedGridSlot*, GridSlot, const FGameplayTag&, EquippmentTypeTag);
 /*-------------------------------------------------------------------------*/

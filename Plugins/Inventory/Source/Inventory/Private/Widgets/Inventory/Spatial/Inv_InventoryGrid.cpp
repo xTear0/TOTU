@@ -798,7 +798,7 @@ void UInv_InventoryGrid::AddSlottedItemToCanvas(const int32 Index, const FInv_Gr
 }
 
 void UInv_InventoryGrid::UpdateGridSlots(UInv_InventoryItem* NewItem, const int32 Index, bool bStackable, const int32 StackAmount)
-{
+{		
 	check(GridSlots.IsValidIndex(Index));
 
 	if (bStackable)
@@ -808,12 +808,13 @@ void UInv_InventoryGrid::UpdateGridSlots(UInv_InventoryItem* NewItem, const int3
 	
 	const FInv_GridFragment* GridFragment = GetFragment<FInv_GridFragment>(NewItem, FragmentTags::GridFragment);
 	const FIntPoint Dimensions = GridFragment ? GridFragment->GetGridSize() : FIntPoint(1, 1);
-
+	const FLinearColor RarityColor = NewItem ? UInv_WidgetUtils::GetHalfOpacityColorFromRarityEnum(NewItem->GetItemManifest().GetItemRarity()) : FLinearColor::White;
+	
 	UInv_InventoryStatics::ForEach2D(GridSlots, Index, Dimensions, Columns, [&](UInv_GridSlot* GridSlot)
 	{
 		GridSlot->SetInventoryItem(NewItem);
 		GridSlot->SetUpperLeftIndex(Index);
-		GridSlot->SetOccupiedTexture();
+		GridSlot->SetOccupiedTexture(RarityColor);
 		GridSlot->SetIsAvailable(false);
 	});
 }

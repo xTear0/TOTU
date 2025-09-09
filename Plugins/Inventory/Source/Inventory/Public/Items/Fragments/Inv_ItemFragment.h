@@ -79,7 +79,7 @@ private:
 	FIntPoint GridSize{1, 1};
 	
 	UPROPERTY(EditAnywhere, Category = "Inventory")
-	float GridPadding{4.f};
+	float GridPadding{0.f};
 };
 
 /*-------------------------------------------------------------------------*/
@@ -113,7 +113,7 @@ private:
 	UTexture2D* Icon{nullptr};
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
-	FVector2D IconDimensions{44.f, 44.f};
+	FVector2D IconDimensions{64.f, 64.f};
 };
 
 USTRUCT(BlueprintType)
@@ -297,6 +297,16 @@ struct FInv_EquipmentFragment : public FInv_InventoryItemFragment
 	void SetEquippedActor(AInv_EquipActor* EquipActor);
 	
 private:
+
+	AInv_EquipActor* CreateEquipmentActor(USkeletalMeshComponent* AttachMesh) const;
+	USkeletalMeshComponent* FindComponentByTag(AActor* Owner, const FName& Tag) const;
+	void AttachActorToMesh(AInv_EquipActor* Actor, USkeletalMeshComponent* AttachMesh) const;
+	void HandleProxyBinding(AInv_EquipActor* SpawnedActor, USkeletalMeshComponent* AttachMesh) const;
+	void HandleStandardBinding(AInv_EquipActor* SpawnedActor, USkeletalMeshComponent* AttachMesh) const;
+	void SetupMasterPoseBinding(USkeletalMeshComponent* ActorMesh, USkeletalMeshComponent* LeaderMesh) const;
+	void HandleWeaponOverride(USkeletalMeshComponent* ActorMesh, USkeletalMeshComponent* WeaponBindMesh) const;
+
+	
 	UPROPERTY()
 	TArray<TInstancedStruct<FInv_EquipModifier>> EquipModifiers;
 
@@ -306,6 +316,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TSubclassOf<AInv_EquipActor> EquipActorClass = nullptr;
 
+	
 	TWeakObjectPtr<AInv_EquipActor> EquippedActor = nullptr;
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")

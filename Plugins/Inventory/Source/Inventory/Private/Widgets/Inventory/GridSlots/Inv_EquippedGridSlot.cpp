@@ -88,13 +88,17 @@ UInv_EquippedSlottedItem* UInv_EquippedGridSlot::OnItemEquipped(UInv_InventoryIt
 	// Set the Image Brush on the Equipped Slotted Item
 	const FInv_ImageFragment* ImageFragment = GetFragment<FInv_ImageFragment>(Item, FragmentTags::IconFragment);
 	if (!ImageFragment) return nullptr;
-
+	
 	FSlateBrush Brush;
 	Brush.SetResourceObject(ImageFragment->GetIcon());
 	Brush.DrawAs = ESlateBrushDrawType::Image;
 	Brush.ImageSize = DrawSize;
 	
 	EquippedSlottedItem->SetImageBrush(Brush);
+
+	// Set the Occupied Brush on the Equipped Grid Slot
+	const FLinearColor RarityColor = Item ? UInv_WidgetUtils::GetHalfOpacityColorFromRarityEnum(Item->GetItemManifest().GetItemRarity()) : FLinearColor::White;
+	SetOccupiedTexture(RarityColor);
 	
 	// Add the Slotted Item as a child to this widget's Overlay.
 	Overlay_Root->AddChild(EquippedSlottedItem);
