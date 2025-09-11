@@ -13,6 +13,7 @@
 #include "Components/TextBlock.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Items/Inv_InventoryItem.h"
+#include "Widgets/Inventory/HoverItem/Inv_HoverItem.h"
 #include "Widgets/Utils/Inv_WidgetUtils.h"
 /*-------------------------------------------------------------------------*/
 
@@ -54,6 +55,28 @@ void UInv_SpatialStorage::NativeOnInitialized()
     {
         Grid_PlayerInventory->SetOwningCanvas(CanvasPanel);
     }
+
+    // Connect Grid_PlayerInventory to the actual inventory component
+    if (IsValid(Grid_PlayerInventory) && IsValid(InventoryComponent))
+    {
+        Grid_PlayerInventory->SetOwningCanvas(CanvasPanel);
+        
+        // Bind to inventory component events
+        InventoryComponent->OnItemAdded.AddDynamic(Grid_PlayerInventory, &UInv_InventoryGrid::AddItem);
+        InventoryComponent->OnStackChanged.AddDynamic(Grid_PlayerInventory, &UInv_InventoryGrid::AddStacks);
+        
+        // Load existing inventory items
+        for (UInv_InventoryItem* Item : InventoryComponent->GetInventoryList().GetAllItems())
+        {
+            if (IsValid(Item) && Item->GetItemManifest().GetItemCategory() == Grid_PlayerInventory->GetItemCategory())
+            {
+                Grid_PlayerInventory->AddItem(Item);
+            }
+        }
+    }
+    
+    // Set initial storage type
+    SetStorageType(EInv_ItemCategory::Equippable);
     
     UpdatePageDisplay();
 }
@@ -84,6 +107,11 @@ void UInv_SpatialStorage::NativeTick(const FGeometry& MyGeometry, float InDeltaT
 {
     Super::NativeTick(MyGeometry, InDeltaTime);
     
+    if (Grid_Storage->HasHoverItem() || Grid_PlayerInventory->HasHoverItem())
+    {
+        HandleCrossGridTransfer();
+    }
+    
     if (IsValid(ItemDescription))
     {
         SetItemDescriptionSizeAndPosition(ItemDescription, CanvasPanel);
@@ -92,18 +120,59 @@ void UInv_SpatialStorage::NativeTick(const FGeometry& MyGeometry, float InDeltaT
 
 FReply UInv_SpatialStorage::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& MouseEvent)
 {
-    // Handle dropping items
-    if (IsValid(Grid_Storage))
-    {
-        Grid_Storage->DropItem();
-    }
+    FVector2D MousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetOwningPlayer());
     
-    if (IsValid(Grid_PlayerInventory))
+    // Check if we're dropping on storage grid
+    if (Grid_PlayerInventory->HasHoverItem())
     {
-        Grid_PlayerInventory->DropItem();
+        FVector2D StoragePos = UInv_WidgetUtils::GetWidgetPosition(Grid_Storage);
+        FVector2D StorageSize = UInv_WidgetUtils::GetWidgetSize(Grid_Storage);
+        
+        if (UInv_WidgetUtils::IsWithinBounds(StoragePos, StorageSize, MousePos))
+        {
+            // Transfer item to storage
+            UInv_InventoryItem* HoverItem = Grid_PlayerInventory->GetHoverItem()->GetInventoryItem();
+            if (IsValid(HoverItem))
+            {
+                TransferItemToStorage(HoverItem);
+                Grid_PlayerInventory->ClearHoverItem();
+                return FReply::Handled();
+            }
+        }
     }
+    // Similar logic for storage to inventory transfer
     
-    return FReply::Handled();
+    return Super::NativeOnMouseButtonDown(InGeometry, MouseEvent);
+}
+
+void UInv_SpatialStorage::HandleCrossGridTransfer()
+{
+    FVector2D MousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetOwningPlayer());
+    
+    // Check which grid the mouse is over
+    if (Grid_Storage->HasHoverItem())
+    {
+        // If hovering over player inventory grid
+        FVector2D GridPos = UInv_WidgetUtils::GetWidgetPosition(Grid_PlayerInventory);
+        FVector2D GridSize = UInv_WidgetUtils::GetWidgetSize(Grid_PlayerInventory);
+        
+        if (UInv_WidgetUtils::IsWithinBounds(GridPos, GridSize, MousePos))
+        {
+            // Allow Grid_PlayerInventory to handle the hover item
+            Grid_PlayerInventory->UpdateTileParameters(GridPos, MousePos);
+        }
+    }
+    else if (Grid_PlayerInventory->HasHoverItem())
+    {
+        // Similar logic for storage grid
+        FVector2D GridPos = UInv_WidgetUtils::GetWidgetPosition(Grid_Storage);
+        FVector2D GridSize = UInv_WidgetUtils::GetWidgetSize(Grid_Storage);
+        
+        if (UInv_WidgetUtils::IsWithinBounds(GridPos, GridSize, MousePos))
+        {
+            Grid_Storage->UpdateTileParameters(GridPos, MousePos);
+        }
+    }
 }
 
 void UInv_SpatialStorage::SetStorageType(EInv_ItemCategory Category)

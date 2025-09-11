@@ -16,9 +16,14 @@
 /*-------------------------------------------------------------------------*/
 void UInv_StorageGrid::NativeOnInitialized()
 {
-    // Call parent initialization but skip the inventory component binding
-    // We'll handle our own component binding
-    Super::NativeOnInitialized();
+    // Call grandparent initialization to skip inventory binding
+    UUserWidget::NativeOnInitialized();
+    
+    // Only construct the grid, don't bind to inventory component
+    ConstructGrid();
+    
+    // Storage grid should only listen to storage component events
+    // which are set up via SetStorageComponent()
 }
 
 void UInv_StorageGrid::SetStorageComponent(UInv_StorageComponent* Component)
@@ -116,7 +121,17 @@ void UInv_StorageGrid::LoadPageItems()
 
 void UInv_StorageGrid::ClearGrid()
 {
-    // Clear all grid slots
+    // Clear visual representation
+    for (auto& SlottedItemPair : SlottedItems)
+    {
+        if (IsValid(SlottedItemPair.Value))
+        {
+            SlottedItemPair.Value->RemoveFromParent();
+        }
+    }
+    SlottedItems.Empty();
+    
+    // Reset grid slots
     for (UInv_GridSlot* GridSlot : GridSlots)
     {
         if (IsValid(GridSlot))
@@ -128,15 +143,5 @@ void UInv_StorageGrid::ClearGrid()
             GridSlot->SetStackCount(0);
         }
     }
-    
-    // Clear all slotted items
-    for (auto& SlottedItemPair : SlottedItems)
-    {
-        if (IsValid(SlottedItemPair.Value))
-        {
-            SlottedItemPair.Value->RemoveFromParent();
-        }
-    }
-    SlottedItems.Empty();
 }
 /*-------------------------------------------------------------------------*/

@@ -43,6 +43,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "HeroPlayerState")
 	UInv_InventoryBase* GetInventoryMenu() const { return InventoryMenu; }
+	
+	const FInv_InventoryFastArray& GetInventoryList() const { return InventoryList; }
 
 // RPCS
 	UFUNCTION(Server, Reliable)

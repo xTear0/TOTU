@@ -74,6 +74,10 @@ protected:
     void TransferItemToInventory(UInv_InventoryItem* Item);
     
 private:
+    bool IsHoverOverStorageGrid() const;
+    bool IsHoverOverInventoryGrid() const;
+    void HandleCrossGridTransfer();
+    
     // UI Components
     UPROPERTY(meta = (BindWidget))
     TObjectPtr<UCanvasPanel> CanvasPanel;

@@ -48,6 +48,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	virtual void AddItem(UInv_InventoryItem* Item);
 
+	UFUNCTION()
+	void AddStacks(const FInv_SlotAvailabilityResult& Result);
+	
 	void ShowCursor();
 	void HideCursor();
 	void SetOwningCanvas(UCanvasPanel* OwningCanvas);
@@ -58,6 +61,7 @@ public:
 	void ClearHoverItem();
 	void AssignHoverItem(UInv_InventoryItem* InventoryItem);
 	void OnHide();
+	void UpdateTileParameters(const FVector2D& CanvasPosition, const FVector2D& MousePosition);
 
 protected:
 	
@@ -67,7 +71,8 @@ protected:
 	void AddItemAtIndex(UInv_InventoryItem* Item, const int32 Index, const bool bStackable, const int32 StackAmount);
 	void UpdateGridSlots(UInv_InventoryItem* NewItem, const int32 Index, bool bStackableItem, const int32 StackAmount);
 	void RemoveItemFromGrid(UInv_InventoryItem* InventoryItem, const int32 GridIndex);
-
+	void ConstructGrid();
+	
 	UPROPERTY()
 	TArray<TObjectPtr<UInv_GridSlot>> GridSlots;
 	
@@ -85,8 +90,6 @@ private:
 	/*-------------------------------------------------------------------------*/
 	/* Private Utility / Helper Functions */
 	/*-------------------------------------------------------------------------*/
-	void ConstructGrid();
-
 	void AddItemToIndices(const FInv_SlotAvailabilityResult& Result, UInv_InventoryItem* NewItem);
 
 	FVector2D GetDrawSize(const FInv_GridFragment* GridFragment) const;
@@ -126,8 +129,7 @@ private:
 	bool IsLeftClick(const FPointerEvent& MouseEvent) const;
 	void PickUp(UInv_InventoryItem* ClickedInventoryItem, const int32 GridIndex);
 	void AssignHoverItem(UInv_InventoryItem* InventoryItem, const int32 GridIndex, const int32 PreviousGridIndex);
-
-	void UpdateTileParameters(const FVector2D& CanvasPosition, const FVector2D& MousePosition);
+	
 	FIntPoint CalculateHoveredCoordinates(const FVector2D& CanvasPosition, const FVector2D& MousePosition) const;
 	EInv_TileQuadrant CalculateQuadrant(const FVector2D& CanvasPosition, const FVector2D& MousePosition) const;
 	void OnTileParametersUpdated(const FInv_TileParameters& Parameters);
@@ -155,9 +157,6 @@ private:
 	/*-------------------------------------------------------------------------*/
 	/* Designated to be Delegate Callbacks */
 	/*-------------------------------------------------------------------------*/
-	UFUNCTION()
-	void AddStacks(const FInv_SlotAvailabilityResult& Result);
-
 	UFUNCTION()
 	void OnSlottedItemClicked(int32 GridIndex, const FPointerEvent& MouseEvent);
 
