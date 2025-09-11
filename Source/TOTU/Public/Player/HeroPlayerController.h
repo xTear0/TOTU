@@ -23,6 +23,7 @@ class UTOTUAbilitySystemComponent;
 class USplineComponent;
 class UDamageTextComponent;
 class UInv_HUDWidget;
+class UInv_StorageComponent;
 /*-------------------------------------------------------------------------*/
 
 
@@ -45,6 +46,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void ToggleInventory();
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void TempToggleStorage();
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	FVector GetTargetImpactPoint() const;
@@ -122,12 +126,16 @@ private:
 	void TraceForItem();
 
 	TWeakObjectPtr<UInv_InventoryComponent> InventoryComponent;
+	TWeakObjectPtr<UInv_StorageComponent> StorageComponent;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
 	TObjectPtr<UInputAction> PrimaryInteractAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
 	TObjectPtr<UInputAction> ToggleInventoryAction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
+	TObjectPtr<UInputAction> TempToggleStorageAction; // TODO: Replace this with an input when hovering on a storage container
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
 	TSubclassOf<UInv_HUDWidget> HUDWidgetClass;

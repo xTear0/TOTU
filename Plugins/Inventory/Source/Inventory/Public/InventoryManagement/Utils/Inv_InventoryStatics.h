@@ -16,6 +16,7 @@ class UInv_InventoryComponent;
 class UInv_ItemComponent;
 class UInv_HoverItem;
 class UInv_InventoryBase;
+class UInv_InventoryItem;
 enum class EInv_ItemCategory : uint8;
 /*-------------------------------------------------------------------------*/
 
@@ -48,6 +49,15 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	static UInv_HoverItem* GetHoverItem(APlayerController* PC);
+
+	UFUNCTION(BlueprintCallable, Category = "Storage")
+	static class UInv_StorageComponent* GetStorageComponent(const APlayerController* PlayerController);
+
+	UFUNCTION(BlueprintCallable, Category = "Storage")
+	static bool TransferItemToStorage(APlayerController* PC, UInv_InventoryItem* Item, int32 PageIndex);
+
+	UFUNCTION(BlueprintCallable, Category = "Storage")
+	static bool TransferItemFromStorage(APlayerController* PC, UInv_InventoryItem* Item);
 
 	static UInv_InventoryBase* GetInventoryWidget(APlayerController* PC);
 };

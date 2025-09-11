@@ -46,7 +46,7 @@ public:
 	FInv_SlotAvailabilityResult HasRoomForItem(const UInv_ItemComponent* ItemComponent);
 	
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void AddItem(UInv_InventoryItem* Item);
+	virtual void AddItem(UInv_InventoryItem* Item);
 
 	void ShowCursor();
 	void HideCursor();
@@ -58,9 +58,26 @@ public:
 	void ClearHoverItem();
 	void AssignHoverItem(UInv_InventoryItem* InventoryItem);
 	void OnHide();
+
+protected:
+	
+	bool MatchesCategory(const UInv_InventoryItem* Item) const;
+	FInv_SlotAvailabilityResult HasRoomForItem(const UInv_InventoryItem* Item, const int32 StackAmountOverride = -1);
+	FInv_SlotAvailabilityResult HasRoomForItem(const FInv_ItemManifest& Manifest, const int32 StackAmountOverride = -1);
+	void AddItemAtIndex(UInv_InventoryItem* Item, const int32 Index, const bool bStackable, const int32 StackAmount);
+	void UpdateGridSlots(UInv_InventoryItem* NewItem, const int32 Index, bool bStackableItem, const int32 StackAmount);
+	void RemoveItemFromGrid(UInv_InventoryItem* InventoryItem, const int32 GridIndex);
+
+	UPROPERTY()
+	TArray<TObjectPtr<UInv_GridSlot>> GridSlots;
+	
+	UPROPERTY()
+	TMap<int32, TObjectPtr<UInv_SlottedItem>> SlottedItems;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category = "Inventory")
+	EInv_ItemCategory ItemCategory;
 	
 private:
-
 	TWeakObjectPtr<UInv_InventoryComponent> InventoryComponent;
 	TWeakObjectPtr<UCanvasPanel> OwningCanvasPanel;
 	TWeakObjectPtr<UInv_InventoryItem> TrackedPopUpItem;
@@ -69,13 +86,12 @@ private:
 	/* Private Utility / Helper Functions */
 	/*-------------------------------------------------------------------------*/
 	void ConstructGrid();
-	FInv_SlotAvailabilityResult HasRoomForItem(const UInv_InventoryItem* Item, const int32 StackAmountOverride = -1);
-	FInv_SlotAvailabilityResult HasRoomForItem(const FInv_ItemManifest& Manifest, const int32 StackAmountOverride = -1);
+
 	void AddItemToIndices(const FInv_SlotAvailabilityResult& Result, UInv_InventoryItem* NewItem);
-	bool MatchesCategory(const UInv_InventoryItem* Item) const;
+
 	FVector2D GetDrawSize(const FInv_GridFragment* GridFragment) const;
 	void SetSlottedItemImage(const UInv_SlottedItem* SlottedItem, const FInv_GridFragment* GridFragment, const FInv_ImageFragment* ImageFragment) const;
-	void AddItemAtIndex(UInv_InventoryItem* Item, const int32 Index, const bool bStackable, const int32 StackAmount);
+	
 	UInv_SlottedItem* CreateSlottedItem(UInv_InventoryItem* Item,
 		const bool bStackable,
 		const int32 StackAmount,
@@ -83,7 +99,7 @@ private:
 		const FInv_ImageFragment* ImageFragment,
 		const int32 Index);
 	void AddSlottedItemToCanvas(const int32 Index, const FInv_GridFragment* GridFragment, UInv_SlottedItem* SlottedItem) const;
-	void UpdateGridSlots(UInv_InventoryItem* NewItem, const int32 Index, bool bStackableItem, const int32 StackAmount);
+
 	bool IsIndexClaimed(const TSet<int32>& CheckedIndicies, const int32 Index) const;
 	bool HasRoomAtIndex(
 		const UInv_GridSlot* GridSlot,
@@ -110,7 +126,7 @@ private:
 	bool IsLeftClick(const FPointerEvent& MouseEvent) const;
 	void PickUp(UInv_InventoryItem* ClickedInventoryItem, const int32 GridIndex);
 	void AssignHoverItem(UInv_InventoryItem* InventoryItem, const int32 GridIndex, const int32 PreviousGridIndex);
-	void RemoveItemFromGrid(UInv_InventoryItem* InventoryItem, const int32 GridIndex);
+
 	void UpdateTileParameters(const FVector2D& CanvasPosition, const FVector2D& MousePosition);
 	FIntPoint CalculateHoveredCoordinates(const FVector2D& CanvasPosition, const FVector2D& MousePosition) const;
 	EInv_TileQuadrant CalculateQuadrant(const FVector2D& CanvasPosition, const FVector2D& MousePosition) const;
@@ -169,11 +185,6 @@ private:
 	/*-------------------------------------------------------------------------*/
 	/* UPROPERTY and Class Information */
 	/*-------------------------------------------------------------------------*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category = "Inventory")
-	EInv_ItemCategory ItemCategory;
-
-	UPROPERTY()
-	TArray<TObjectPtr<UInv_GridSlot>> GridSlots;
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TSubclassOf<UInv_GridSlot> GridSlotClass;
@@ -184,8 +195,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TSubclassOf<UInv_SlottedItem> SlottedItemClass;
 
-	UPROPERTY()
-	TMap<int32, TObjectPtr<UInv_SlottedItem>> SlottedItems;
+
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	int32 Rows;

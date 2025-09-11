@@ -11,6 +11,7 @@
 #include "GameFramework/Character.h"
 #include "Interaction/Inv_Highlightable.h"
 #include "Items/Components/Inv_ItemComponent.h"
+#include "InventoryManagement/Components/Inv_StorageComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/Widget/DamageTextComponent.h"
 #include "Widgets/HUD/Inv_HUDWidget.h"
@@ -48,12 +49,14 @@ void AHeroPlayerController::BeginPlay()
 	check(HeroContext);
 
 	InventoryComponent = FindComponentByClass<UInv_InventoryComponent>();
+	StorageComponent = FindComponentByClass<UInv_StorageComponent>();
 	
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
 	if (IsValid(Subsystem))
 	{
 		Subsystem->AddMappingContext(HeroContext, 0);
 	}
+	
 	// Settings for Inventory System
 	CreateHUDWidget();
 
@@ -86,6 +89,7 @@ void AHeroPlayerController::SetupInputComponent()
 	// Inventory Actions
 	TOTUInputComponent->BindAction(PrimaryInteractAction, ETriggerEvent::Started, this, &AHeroPlayerController::PrimaryInteract);
 	TOTUInputComponent->BindAction(ToggleInventoryAction, ETriggerEvent::Started, this, &AHeroPlayerController::ToggleInventory);
+	TOTUInputComponent->BindAction(TempToggleStorageAction, ETriggerEvent::Started, this, &AHeroPlayerController::TempToggleStorage);
 	
 	TOTUInputComponent->BindAbilityActions(InputConfig, this,
 		&ThisClass::AbilityInputTagPressed,
@@ -236,6 +240,14 @@ void AHeroPlayerController::ToggleInventory()
 	{
 		HUDWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
 	}
+}
+
+void AHeroPlayerController::TempToggleStorage()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Toggle storage (TEMPORARY IMPLEMENTATION)"));
+
+	if (!StorageComponent.IsValid()) return;
+	StorageComponent->ToggleStorageMenu();
 }
 
 FVector AHeroPlayerController::GetTargetImpactPoint() const

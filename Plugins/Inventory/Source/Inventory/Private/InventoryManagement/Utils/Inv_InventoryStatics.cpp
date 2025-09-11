@@ -4,6 +4,8 @@
 #include "InventoryManagement/Components/Inv_InventoryComponent.h"
 #include "Widgets/Inventory/InventoryBase/Inv_InventoryBase.h"
 #include "Items/Components/Inv_ItemComponent.h"
+#include "InventoryManagement/Components/Inv_StorageComponent.h"
+#include "Items/Inv_InventoryItem.h"
 #include "Types/Inv_EnumTypes.h"
 /*-------------------------------------------------------------------------*/
 
@@ -66,6 +68,36 @@ UInv_InventoryBase* UInv_InventoryStatics::GetInventoryWidget(APlayerController*
 	if (!IsValid(IC)) return nullptr;
 
 	return IC->GetInventoryMenu();
+}
+
+UInv_StorageComponent* UInv_InventoryStatics::GetStorageComponent(const APlayerController* PlayerController)
+{
+	if (!IsValid(PlayerController)) return nullptr;
+	return PlayerController->FindComponentByClass<UInv_StorageComponent>();
+}
+
+bool UInv_InventoryStatics::TransferItemToStorage(APlayerController* PC, UInv_InventoryItem* Item, int32 PageIndex)
+{
+	if (!IsValid(PC) || !IsValid(Item)) return false;
+    
+	UInv_StorageComponent* StorageComp = GetStorageComponent(PC);
+	UInv_InventoryComponent* InventoryComp = GetInventoryComponent(PC);
+    
+	if (!IsValid(StorageComp) || !IsValid(InventoryComp)) return false;
+    
+	StorageComp->Server_TransferToStorage(Item, PageIndex, Item->GetTotalStackCount());
+	return true;
+}
+
+bool UInv_InventoryStatics::TransferItemFromStorage(APlayerController* PC, UInv_InventoryItem* Item)
+{
+	if (!IsValid(PC) || !IsValid(Item)) return false;
+    
+	UInv_StorageComponent* StorageComp = GetStorageComponent(PC);
+	if (!IsValid(StorageComp)) return false;
+    
+	StorageComp->Server_TransferToInventory(Item, Item->GetTotalStackCount());
+	return true;
 }
 #pragma endregion
 /*-------------------------------------------------------------------------*/
