@@ -36,9 +36,9 @@ UCLASS()
 class INVENTORY_API UInv_GridSlot : public UUserWidget
 {
 	GENERATED_BODY()
-
 	
 public:
+	
 	virtual void NativeOnMouseEnter(const  FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 	virtual void NativeOnMouseLeave(const FPointerEvent& MouseEvent) override;
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& MouseEvent) override;
@@ -63,7 +63,7 @@ public:
 	void SetUnoccupiedTexture();
 	void SetSelectedTexture();
 	void SetGrayedOutTexture();
-
+	
 	FGridSlotEvent GridSlotClicked;
 	FGridSlotEvent GridSlotHovered;
 	FGridSlotEvent GridSlotUnHovered;

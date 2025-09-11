@@ -25,7 +25,7 @@
 #pragma region Inv_ItemFragment.cpp_Functions
 void FInv_LabeledNumberFragment::Manifest()
 {
-	FInv_InventoryItemFragment::Manifest();
+	FInv_InventoryItemFragment::Manifest();	
 }
 
 void FInv_NumberedLabelFragment::Manifest()
@@ -536,5 +536,3 @@ void FInv_EquipmentFragment::SetEquippedActor(AInv_EquipActor* EquipActor)
 }
 #pragma endregion
 /*-------------------------------------------------------------------------*/
-
-
