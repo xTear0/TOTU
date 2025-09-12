@@ -2,7 +2,6 @@
 /*-------------------------------------------------------------------------*/
 #pragma once
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
 #include "Types/Inv_EnumTypes.h"
 #include "Widgets/Inventory/InventoryBase/Inv_InventoryBase.h"
 #include "Inv_SpatialStorage.generated.h"
@@ -38,7 +37,13 @@ public:
     virtual void NativeOnInitialized() override;
     virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
     virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& MouseEvent) override;
-    
+
+    UFUNCTION()
+    void OnInventoryItemAdded(UInv_InventoryItem* Item);
+
+    UFUNCTION()
+    void OnStorageItemAdded(UInv_InventoryItem* Item);
+
     UFUNCTION(BlueprintCallable, Category = "Storage")
     void SetStorageType(EInv_ItemCategory Category);
     
@@ -63,20 +68,23 @@ protected:
     void OnPageAdded();
     
     // Item hovering
-    void OnItemHovered(UInv_InventoryItem* Item);
-    void OnItemUnhovered();
+    virtual void OnItemHovered(UInv_InventoryItem* Item) override;
+    virtual void OnItemUnhovered() override;
     
     // Transfer functions
     UFUNCTION()
-    void TransferItemToStorage(UInv_InventoryItem* Item);
+    void TransferItemToStorage(UInv_InventoryItem* Item) const;
     
     UFUNCTION()
-    void TransferItemToInventory(UInv_InventoryItem* Item);
+    void TransferItemToInventory(UInv_InventoryItem* Item) const;
     
 private:
-    bool IsHoverOverStorageGrid() const;
-    bool IsHoverOverInventoryGrid() const;
-    void HandleCrossGridTransfer();
+    
+    void HandleCrossGridTransfer() const;
+
+    void HandleGridHovering() const;
+    UInv_InventoryGrid* GetActiveHoverGrid() const;
+    UInv_InventoryGrid* GetTargetGrid(const FVector2D& MousePos) const;
     
     // UI Components
     UPROPERTY(meta = (BindWidget))
@@ -129,7 +137,7 @@ private:
     float DescriptionTimerDelay = 0.5f;
     
     // Helper functions
-    void UpdatePageDisplay();
+    void UpdatePageDisplay() const;
     void SetItemDescriptionSizeAndPosition(UInv_ItemDescription* Description, UCanvasPanel* Canvas) const;
     UInv_ItemDescription* GetItemDescription(const EInv_ItemRarity& Rarity = EInv_ItemRarity::Common, bool UseRarity = false);
     void InitializeComponents();

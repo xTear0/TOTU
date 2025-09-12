@@ -1,7 +1,6 @@
 ﻿// Copyright xTear Studios
 /*-------------------------------------------------------------------------*/
 #include "InventoryManagement/Components/Inv_InventoryComponent.h"
-#include "BlendSpaceAnalysis.h"
 #include "Items/Components/Inv_ItemComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Widgets/Inventory/InventoryBase/Inv_InventoryBase.h"
@@ -43,11 +42,9 @@ void UInv_InventoryComponent::BeginPlay()
 	ConstructInventory();
 }
 
-UFUNCTION(BlueprintCallable, Category = "Inventory")
 void UInv_InventoryComponent::TryAddItem(UInv_ItemComponent* ItemComponent)
 {
 	// Is the item being added to the TreasureMenu or the InventoryMenu?
-	
 	
 	FInv_SlotAvailabilityResult Result = InventoryMenu->HasRoomForItem(ItemComponent);
 	
@@ -120,7 +117,7 @@ void UInv_InventoryComponent::Server_DropItem_Implementation(UInv_InventoryItem*
 	SpawnDroppedItem(Item, StackCount);
 }
 
-void UInv_InventoryComponent::SpawnDroppedItem(UInv_InventoryItem* Item, int32 StackCount)
+void UInv_InventoryComponent::SpawnDroppedItem(UInv_InventoryItem* Item, int32 StackCount) const
 {
 	// Spawn Dropped Item in the Level.
 	const APawn* OwningPawn = OwningController->GetPawn();

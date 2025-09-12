@@ -1,20 +1,10 @@
 ﻿// Copyright xTear Studios
 /*-------------------------------------------------------------------------*/
 #include "Widgets/Inventory/Spatial/Inv_InventoryGrid.h"
-
-#include <rapidjson/internal/meta.h>
-#include <rapidjson/internal/stack.h>
-
-#include "IContentBrowserSingleton.h"
-#include "IDetailTreeNode.h"
-#include "InputState.h"
 #include "Inventory.h"
-#include "MyBlueprintItemDragDropAction.h"
-#include "NavigationSystemTypes.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
-#include "DSP/Chorus.h"
 #include "InventoryManagement/Components/Inv_InventoryComponent.h"
 #include "InventoryManagement/Utils/Inv_InventoryStatics.h"
 #include "Items/Inv_InventoryItem.h"
@@ -24,7 +14,6 @@
 #include "Widgets/Inventory/GridSlots/Inv_GridSlot.h"
 #include "Widgets/Utils/Inv_WidgetUtils.h"
 #include "Items/Manifest/Inv_ItemManifest.h"
-#include "ViewportToolbar/UnrealEdViewportToolbarContext.h"
 #include "Widgets/Inventory/HoverItem/Inv_HoverItem.h"
 #include "Widgets/Inventory/SlottedItems/Inv_SlottedItem.h"
 #include "Widgets/ItemPopUp/Inv_ItemPopUp.h"
@@ -38,13 +27,20 @@
 #pragma region Inv_InventoryGrid.cpp_Functions
 void UInv_InventoryGrid::NativeOnInitialized()
 {
-	Super::NativeOnInitialized();
-
-	ConstructGrid();
-	InventoryComponent = UInv_InventoryStatics::GetInventoryComponent(GetOwningPlayer());
-	InventoryComponent->OnItemAdded.AddDynamic(this, &ThisClass::AddItem);
-	InventoryComponent->OnStackChanged.AddDynamic(this, &ThisClass::AddStacks);
-	InventoryComponent->OnInventoryMenuToggled.AddDynamic(this, &ThisClass::OnInventoryMenuToggled);
+    Super::NativeOnInitialized();
+    
+    ConstructGrid();
+    
+    if (bAutoBindInventory)
+    {
+        InventoryComponent = UInv_InventoryStatics::GetInventoryComponent(GetOwningPlayer());
+        if (IsValid(InventoryComponent.Get()))
+        {
+            InventoryComponent->OnItemAdded.AddDynamic(this, &ThisClass::AddItem);
+            InventoryComponent->OnStackChanged.AddDynamic(this, &ThisClass::AddStacks);
+            InventoryComponent->OnInventoryMenuToggled.AddDynamic(this, &ThisClass::OnInventoryMenuToggled);
+        }
+    }
 }
 
 void UInv_InventoryGrid::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -204,7 +200,7 @@ void UInv_InventoryGrid::ChangeHoverType(const int32 Index, const FIntPoint& Dim
 }
 
 FIntPoint UInv_InventoryGrid::CalculateStartingCoordinate(const FIntPoint& Coordinate, const FIntPoint& Dimensions,
-                                                          const EInv_TileQuadrant Quadrant) const
+                                                          const EInv_TileQuadrant Quadrant)
 {
 	const int32 HasEvenWidth = Dimensions.X % 2 == 0 ? 1 : 0;
 	const int32 HasEvenHeight = Dimensions.Y % 2 == 0 ? 1 : 0;
@@ -348,7 +344,7 @@ bool UInv_InventoryGrid::HasRoomAtIndex(
 	bool bHasRoomAtIndex = true;
 	UInv_InventoryStatics::ForEach2D(GridSlots, GridSlot->GetIndex(), Dimensions, Columns, [&](const UInv_GridSlot* SubGridSlot)
 	{
-		if (CheckSlotContraints(GridSlot, SubGridSlot, CheckedIndicies, OutTentativelyClaimed, ItemType, MaxStackSize))
+		if (CheckSlotConstraints(GridSlot, SubGridSlot, CheckedIndicies, OutTentativelyClaimed, ItemType, MaxStackSize))
 		{
 			OutTentativelyClaimed.Add(SubGridSlot->GetIndex());
 		}
@@ -360,13 +356,13 @@ bool UInv_InventoryGrid::HasRoomAtIndex(
 	return bHasRoomAtIndex;
 }
 
-bool UInv_InventoryGrid::CheckSlotContraints(
+bool UInv_InventoryGrid::CheckSlotConstraints(
 	const UInv_GridSlot* GridSlot,
 	const UInv_GridSlot* SubGridSlot,
 	const TSet<int32>& CheckedIndicies,
 	TSet<int32>& OutTentativelyClaimed,
 	const FGameplayTag& ItemType,
-	const int32 MaxStackSize) const
+	const int32 MaxStackSize)
 {
 	// Index claimed?
 	if (IsIndexClaimed(CheckedIndicies, SubGridSlot->GetIndex())) return false;
@@ -392,23 +388,23 @@ bool UInv_InventoryGrid::CheckSlotContraints(
 	return true;
 }
 
-FIntPoint UInv_InventoryGrid::GetItemDimensions(const FInv_ItemManifest& Manifest) const
+FIntPoint UInv_InventoryGrid::GetItemDimensions(const FInv_ItemManifest& Manifest)
 {
-	const FInv_GridFragment* GridFragmnt = Manifest.GetFragmentOfType<FInv_GridFragment>();
-	return GridFragmnt ? GridFragmnt->GetGridSize() : FIntPoint(1, 1);
+	const FInv_GridFragment* GridFragment = Manifest.GetFragmentOfType<FInv_GridFragment>();
+	return GridFragment ? GridFragment->GetGridSize() : FIntPoint(1, 1);
 }
 
-bool UInv_InventoryGrid::HasValidItem(const UInv_GridSlot* GridSlot) const
+bool UInv_InventoryGrid::HasValidItem(const UInv_GridSlot* GridSlot)
 {
 	return GridSlot->GetInventoryItem().IsValid();
 }
 
-bool UInv_InventoryGrid::IsUpperLeftSlot(const UInv_GridSlot* GridSlot, const UInv_GridSlot* SubGridSlot) const
+bool UInv_InventoryGrid::IsUpperLeftSlot(const UInv_GridSlot* GridSlot, const UInv_GridSlot* SubGridSlot)
 {
 	return SubGridSlot->GetUpperLeftIndex() == GridSlot->GetIndex();
 }
 
-bool UInv_InventoryGrid::DoesItemTypeMatch(const UInv_InventoryItem* SubItem, const FGameplayTag& ItemType) const
+bool UInv_InventoryGrid::DoesItemTypeMatch(const UInv_InventoryItem* SubItem, const FGameplayTag& ItemType)
 {
 	return SubItem->GetItemManifest().GetItemType().MatchesTagExact(ItemType);
 }
@@ -442,12 +438,12 @@ int32 UInv_InventoryGrid::GetStackAmount(const UInv_GridSlot* GridSlot) const
 	return CurrentSlotStackCount;
 }
 
-bool UInv_InventoryGrid::IsRightClick(const FPointerEvent& MouseEvent) const
+bool UInv_InventoryGrid::IsRightClick(const FPointerEvent& MouseEvent)
 {
 	return MouseEvent.GetEffectingButton() == EKeys::RightMouseButton;
 }
 
-bool UInv_InventoryGrid::IsLeftClick(const FPointerEvent& MouseEvent) const
+bool UInv_InventoryGrid::IsLeftClick(const FPointerEvent& MouseEvent)
 {
 	return MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton;
 }
@@ -469,7 +465,7 @@ void UInv_InventoryGrid::AssignHoverItem(UInv_InventoryItem* InventoryItem, cons
 	HoverItem->UpdateStackCount(InventoryItem->IsStackable() ? GridSlots[GridIndex]->GetStackCount() : 0);
 }
 
-void UInv_InventoryGrid::RemoveItemFromGrid(UInv_InventoryItem* InventoryItem, const int32 GridIndex)
+void UInv_InventoryGrid::RemoveItemFromGrid(const UInv_InventoryItem* InventoryItem, const int32 GridIndex)
 {
 	const FInv_GridFragment* GridFragment = GetFragment<FInv_GridFragment>(InventoryItem, FragmentTags::GridFragment);
 	if (!GridFragment) return;
@@ -672,7 +668,7 @@ UInv_HoverItem* UInv_InventoryGrid::GetHoverItem() const
 }
 
 bool UInv_InventoryGrid::ShouldSwapStackCounts(const int32 RoomInClickedSlot, const int32 HoveredStackCount,
-                                               const int32 MaxStackSize) const
+                                               const int32 MaxStackSize)
 {
 	return RoomInClickedSlot == 0 && HoveredStackCount < MaxStackSize;
 }
@@ -687,7 +683,7 @@ void UInv_InventoryGrid::SwapStackCounts(const int32 ClickedStackCount, const in
 	HoverItem->UpdateStackCount(ClickedStackCount);
 }
 
-bool UInv_InventoryGrid::ShouldConsumeHoverItemStacks(const int32 HoveredStackCount, const int32 RoomInClickedSlot) const
+bool UInv_InventoryGrid::ShouldConsumeHoverItemStacks(const int32 HoveredStackCount, const int32 RoomInClickedSlot)
 {
 	return RoomInClickedSlot >= HoveredStackCount;
 }
@@ -707,7 +703,7 @@ void UInv_InventoryGrid::ConsumeHoverItemStacks(const int32 ClickedStackCount, c
 	HighlightSlots(Index, Dimensions);
 }
 
-bool UInv_InventoryGrid::ShouldFillInStack(const int32 RoomInClickedSlot, const int32 HoveredStackCount) const
+bool UInv_InventoryGrid::ShouldFillInStack(const int32 RoomInClickedSlot, const int32 HoveredStackCount)
 {
 	return RoomInClickedSlot < HoveredStackCount;
 }
@@ -819,7 +815,7 @@ void UInv_InventoryGrid::UpdateGridSlots(UInv_InventoryItem* NewItem, const int3
 	});
 }
 
-bool UInv_InventoryGrid::IsIndexClaimed(const TSet<int32>& CheckedIndicies, const int32 Index) const
+bool UInv_InventoryGrid::IsIndexClaimed(const TSet<int32>& CheckedIndicies, const int32 Index)
 {
 	return CheckedIndicies.Contains(Index);
 }
@@ -927,7 +923,7 @@ UUserWidget* UInv_InventoryGrid::GetHiddenCursorWidget()
 	return HiddenCursorWidget;
 }
 
-bool UInv_InventoryGrid::IsSameStackable(const UInv_InventoryItem* ClickedInventoryItem)
+bool UInv_InventoryGrid::IsSameStackable(const UInv_InventoryItem* ClickedInventoryItem) const
 {
 	const bool bIsSameItem = ClickedInventoryItem == HoverItem->GetInventoryItem();
 	const bool bIsStackable = ClickedInventoryItem->IsStackable();

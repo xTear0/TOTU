@@ -268,7 +268,7 @@ void UInv_SpatialInventory::BroadcastSlotClickedDelegates(UInv_InventoryItem* It
 }
 
 bool UInv_SpatialInventory::CanSwapItems(FGameplayTag ItemToEquipTag, FGameplayTag ItemToUnequipTag,
-	FGameplayTag EquippedGridSlotTag) const
+	FGameplayTag EquippedGridSlotTag)
 {
 	if (ItemToEquipTag.IsValid() && ItemToUnequipTag.IsValid() && EquippedGridSlotTag.IsValid())
 	{
@@ -312,7 +312,7 @@ void UInv_SpatialInventory::OnAttributeHovered(bool bShow, FGameplayTag Attribut
 
 		GetOwningPlayer()->GetWorldTimerManager().ClearTimer(AttributeBreakdownTimer);
 		FTimerDelegate AttributeBreakdownTimerDelegate;
-		AttributeBreakdownTimerDelegate.BindLambda( [this, &AttributeBreakdownWidget, BreakdownInfo]()
+		AttributeBreakdownTimerDelegate.BindLambda( [this]()
 		{
 			GetAttributeBreakdown()->SetVisibility(ESlateVisibility::HitTestInvisible);
 		});

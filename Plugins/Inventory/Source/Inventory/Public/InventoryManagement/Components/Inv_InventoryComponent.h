@@ -66,7 +66,7 @@ public:
 	void Multicast_EquipSlotClicked(UInv_InventoryItem* ItemToEquip, UInv_InventoryItem* ItemToUnequip);
 
 	void AddRepSubObj(UObject* SubObj);
-	void SpawnDroppedItem(UInv_InventoryItem* Item, int32 StackCount);
+	void SpawnDroppedItem(UInv_InventoryItem* Item, int32 StackCount) const;
 	void ToggleInventoryMenu();
 	
 	FInventoryItemChange OnItemAdded;

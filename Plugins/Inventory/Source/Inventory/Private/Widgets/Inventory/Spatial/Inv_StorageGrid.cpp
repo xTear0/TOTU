@@ -19,7 +19,7 @@ void UInv_StorageGrid::NativeOnInitialized()
     // Call grandparent initialization to skip inventory binding
     UUserWidget::NativeOnInitialized();
     
-    // Only construct the grid, don't bind to inventory component
+    // Only construct the grid, don't bind to an inventory component
     ConstructGrid();
     
     // Storage grid should only listen to storage component events
