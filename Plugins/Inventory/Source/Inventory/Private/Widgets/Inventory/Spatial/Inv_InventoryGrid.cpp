@@ -62,23 +62,50 @@ void UInv_InventoryGrid::UpdateTileParameters(const FVector2D& CanvasPosition, c
 {
 	// If Mouse is not in the Canvas Panel, return.
 	if (!bMouseWithinCanvas) return;
+    
+	// Use temporary hover item if set, otherwise use regular hover item
+	UInv_HoverItem* ActiveHoverItem = nullptr;
+    
+	if (IsValid(TemporaryHoverItem))
+	{
+		ActiveHoverItem = TemporaryHoverItem;
+	}
+	else if (IsValid(HoverItem))
+	{
+		ActiveHoverItem = HoverItem;
+	}
+	else if (IsValid(HoverItemReferenceGrid))
+	{
+		ActiveHoverItem = HoverItemReferenceGrid->GetHoverItem();
+	}
+    
+	if (!IsValid(ActiveHoverItem)) return;
+    
 	// Calculate Tile Quadrant, Tile Index, and Coordinates
 	const FIntPoint HoveredTileCoordinates = CalculateHoveredCoordinates(CanvasPosition, MousePosition);
-	
+    
 	LastTileParameters = TileParameters;
 	TileParameters.TileCoordinates = HoveredTileCoordinates;
 	TileParameters.TileIndex = UInv_WidgetUtils::GetIndexFromPosition(HoveredTileCoordinates, Columns);
 	TileParameters.TileQuadrant = CalculateQuadrant(CanvasPosition, MousePosition);
-	
-	// Handle Highlight/Unhighlight of the grid slots.
-	OnTileParametersUpdated(TileParameters);
+    
+	// Call the overloaded version with the active hover item
+	OnTileParametersUpdated(TileParameters, ActiveHoverItem);
 }
 
+// Original method - now just calls the overloaded version with the default hover item
 void UInv_InventoryGrid::OnTileParametersUpdated(const FInv_TileParameters& Parameters)
 {
-	if (!IsValid(HoverItem)) return;
+	OnTileParametersUpdated(Parameters, HoverItem);
+}
+
+// New overloaded method that does the actual work
+void UInv_InventoryGrid::OnTileParametersUpdated(const FInv_TileParameters& Parameters, UInv_HoverItem* ActiveHoverItem)
+{
+	if (!IsValid(ActiveHoverItem)) return;
+    
 	// Get Hover Item's dimensions.
-	const FIntPoint Dimensions = HoverItem->GetGridDimensions();
+	const FIntPoint Dimensions = ActiveHoverItem->GetGridDimensions();
 	// Calculate the starting coordinate for highlighting.
 	const FIntPoint StartingCoordinate = CalculateStartingCoordinate(Parameters.TileCoordinates, Dimensions, Parameters.TileQuadrant);
 	ItemDropIndex = UInv_WidgetUtils::GetIndexFromPosition(StartingCoordinate, Columns);
@@ -97,7 +124,6 @@ void UInv_InventoryGrid::OnTileParametersUpdated(const FInv_TileParameters& Para
 		const FInv_GridFragment* GridFragment = GetFragment<FInv_GridFragment>(CurrentQueryResult.ValidItem.Get(), FragmentTags::GridFragment);
 		if (!GridFragment) return;
 		ChangeHoverType(CurrentQueryResult.UpperLeftIndex, GridFragment->GetGridSize(), EInv_GridSlotState::GrayedOut);
-		
 	}
 }
 
@@ -483,7 +509,10 @@ void UInv_InventoryGrid::RemoveItemFromGrid(const UInv_InventoryItem* InventoryI
 	{
 		TObjectPtr<UInv_SlottedItem> FoundSlottedItem;
 		SlottedItems.RemoveAndCopyValue(GridIndex, FoundSlottedItem);
-		FoundSlottedItem->RemoveFromParent();
+		if (IsValid(FoundSlottedItem))
+		{
+			FoundSlottedItem->RemoveFromParent();
+		}
 	}
 }
 
@@ -1054,6 +1083,82 @@ void UInv_InventoryGrid::HideCursor()
 void UInv_InventoryGrid::SetOwningCanvas(UCanvasPanel* OwningCanvas)
 {
 	OwningCanvasPanel = OwningCanvas;
+}
+
+void UInv_InventoryGrid::OnItemRemoved(UInv_InventoryItem* Item)
+{
+	if (!IsValid(Item)) return;
+    
+	// Find and remove the item from the grid
+	for (auto It = SlottedItems.CreateIterator(); It; ++It)
+	{
+		if (It.Value()->GetInventoryItem() == Item)
+		{
+			RemoveItemFromGrid(Item, It.Key());
+			break;
+		}
+	}
+}
+
+void UInv_InventoryGrid::ClearGrid()
+{
+	// Clear hover item if it exists
+	if (IsValid(HoverItem))
+	{
+		ClearHoverItem();
+	}
+    
+	// Clear all slotted items from the canvas
+	for (auto& SlottedItemPair : SlottedItems)
+	{
+		if (IsValid(SlottedItemPair.Value))
+		{
+			SlottedItemPair.Value->RemoveFromParent();
+		}
+	}
+	SlottedItems.Empty();
+    
+	// Reset all grid slots to default state
+	for (UInv_GridSlot* GridSlot : GridSlots)
+	{
+		if (IsValid(GridSlot))
+		{
+			GridSlot->SetInventoryItem(nullptr);
+			GridSlot->SetUpperLeftIndex(INDEX_NONE);
+			GridSlot->SetUnoccupiedTexture();
+			GridSlot->SetIsAvailable(true);
+			GridSlot->SetStackCount(0);
+            
+			// Clear any popup menus
+			if (GridSlot->GetItemPopUp())
+			{
+				if (IsValid(GridSlot->GetItemPopUp()))
+				{
+					GridSlot->GetItemPopUp()->RemoveFromParent();
+				}
+				GridSlot->SetItemPopUp(nullptr);
+			}
+		}
+	}
+    
+	// Clear tracked popup item - use Reset() for TWeakObjectPtr
+	TrackedPopUpItem.Reset();
+    
+	// Reset grid state variables
+	ItemDropIndex = INDEX_NONE;
+	CurrentQueryResult = FInv_SpaceQueryResult();
+	LastHighlightedIndex = 0;
+	LastHighlightedDimensions = FIntPoint(0, 0);
+    
+	// Clear temporary hover item
+	TemporaryHoverItem = nullptr;
+    
+	// Clear any active item popup
+	if (IsValid(ItemPopUp))
+	{
+		ItemPopUp->RemoveFromParent();
+		ItemPopUp = nullptr;
+	}
 }
 #pragma endregion
 /*-------------------------------------------------------------------------*/

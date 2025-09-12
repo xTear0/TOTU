@@ -14,11 +14,11 @@
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Items/Inv_InventoryItem.h"
 #include "Items/Fragments/Inv_ItemFragment.h"
+#include "Items/Fragments/Inv_FragmentTags.h"
 #include "Widgets/Inventory/HoverItem/Inv_HoverItem.h"
 #include "Widgets/Utils/Inv_WidgetUtils.h"
+#include "Inventory.h"
 /*-------------------------------------------------------------------------*/
-
-
 
 /*-------------------------------------------------------------------------*/
 /*   Functions                                                             */
@@ -27,33 +27,14 @@ void UInv_SpatialStorage::NativeOnInitialized()
 {
     Super::NativeOnInitialized();
     
-    InitializeComponents();
-
-    if (IsValid(Grid_PlayerInventory) && IsValid(InventoryComponent))
+    // Check that ItemDescriptionClass is valid
+    if (!ItemDescriptionClass)
     {
-        Grid_PlayerInventory->SetAutoBindToInventory(false);
-        Grid_PlayerInventory->SetOwningCanvas(CanvasPanel);
-        
-        // Manually set up the inventory component
-        if (IsValid(InventoryComponent))
-        {
-            // Manually bind the events
-            InventoryComponent->OnItemAdded.AddDynamic(Grid_PlayerInventory, &UInv_InventoryGrid::AddItem);
-            InventoryComponent->OnStackChanged.AddDynamic(Grid_PlayerInventory, &UInv_InventoryGrid::AddStacks);
-            
-            // Load existing inventory items based on category
-            const auto& InventoryList = InventoryComponent->GetInventoryList();
-            for (UInv_InventoryItem* Item : InventoryList.GetAllItems())
-            {
-                if (IsValid(Item) && Item->GetItemManifest().GetItemCategory() == Grid_PlayerInventory->GetItemCategory())
-                {
-                    Grid_PlayerInventory->AddItem(Item);
-                }
-            }
-            // Connect hover events to show item description
-            InventoryComponent->OnItemAdded.AddDynamic(this, &ThisClass::OnInventoryItemAdded);
-        }
+        UE_LOG(LogInventory, Error, TEXT("ItemDescriptionClass is null in SpatialStorage. Please set it in the Blueprint."));
     }
+    
+    InitializeComponents();
+    SetupInventoryGrid();
     
     // Set up button callbacks
     if (IsValid(Button_PreviousPage))
@@ -71,40 +52,22 @@ void UInv_SpatialStorage::NativeOnInitialized()
         Button_AddPage->OnClicked.AddDynamic(this, &ThisClass::OnPageAdded);
     }
     
-    // Set up grids
+    // Set up storage grid
     if (IsValid(Grid_Storage))
     {
         Grid_Storage->SetOwningCanvas(CanvasPanel);
         Grid_Storage->SetStorageComponent(StorageComponent);
-    }
-    
-    if (IsValid(Grid_PlayerInventory))
-    {
-        Grid_PlayerInventory->SetOwningCanvas(CanvasPanel);
-    }
-
-    // Connect Grid_PlayerInventory to the actual inventory component
-    if (IsValid(Grid_PlayerInventory) && IsValid(InventoryComponent))
-    {
-        Grid_PlayerInventory->SetOwningCanvas(CanvasPanel);
         
-        // Bind to inventory component events
-        InventoryComponent->OnItemAdded.AddDynamic(Grid_PlayerInventory, &UInv_InventoryGrid::AddItem);
-        InventoryComponent->OnStackChanged.AddDynamic(Grid_PlayerInventory, &UInv_InventoryGrid::AddStacks);
-        
-        // Load existing inventory items
-        for (UInv_InventoryItem* Item : InventoryComponent->GetInventoryList().GetAllItems())
+        // IMPORTANT: Set the hover item reference from player inventory
+        // This allows the storage grid to recognize hover items from player inventory
+        if (IsValid(Grid_PlayerInventory))
         {
-            if (IsValid(Item) && Item->GetItemManifest().GetItemCategory() == Grid_PlayerInventory->GetItemCategory())
-            {
-                Grid_PlayerInventory->AddItem(Item);
-            }
+            Grid_Storage->SetHoverItemReference(Grid_PlayerInventory);
         }
     }
     
     // Set initial storage type
     SetStorageType(EInv_ItemCategory::Equippable);
-    
     UpdatePageDisplay();
 }
 
@@ -113,7 +76,7 @@ void UInv_SpatialStorage::InitializeComponents()
     APlayerController* PC = GetOwningPlayer();
     if (!IsValid(PC)) return;
     
-    // Get or create a storage component
+    // Get or create storage component
     StorageComponent = PC->FindComponentByClass<UInv_StorageComponent>();
     if (!IsValid(StorageComponent))
     {
@@ -121,7 +84,7 @@ void UInv_SpatialStorage::InitializeComponents()
         StorageComponent->RegisterComponent();
     }
     
-    // Get an inventory component
+    // Get inventory component
     InventoryComponent = UInv_InventoryStatics::GetInventoryComponent(PC);
     
     if (IsValid(StorageComponent))
@@ -130,83 +93,129 @@ void UInv_SpatialStorage::InitializeComponents()
     }
 }
 
+void UInv_SpatialStorage::SetupInventoryGrid()
+{
+    if (!IsValid(Grid_PlayerInventory) || !IsValid(InventoryComponent)) return;
+    
+    // IMPORTANT: Use the same inventory component reference as the main inventory
+    // This ensures both UIs share the same data
+    if (IsValid(InventoryComponent.Get()))
+    {
+        Grid_PlayerInventory->SetInventoryComponent(InventoryComponent.Get());
+    }
+    Grid_PlayerInventory->SetAutoBindToInventory(false);
+    Grid_PlayerInventory->SetOwningCanvas(CanvasPanel);
+    
+    // Clear any existing bindings first
+    InventoryComponent->OnItemAdded.RemoveAll(Grid_PlayerInventory);
+    InventoryComponent->OnStackChanged.RemoveAll(Grid_PlayerInventory);
+    InventoryComponent->OnItemRemoved.RemoveAll(Grid_PlayerInventory);
+    
+    // Bind to inventory events
+    InventoryComponent->OnItemAdded.AddDynamic(Grid_PlayerInventory, &UInv_InventoryGrid::AddItem);
+    InventoryComponent->OnStackChanged.AddDynamic(Grid_PlayerInventory, &UInv_InventoryGrid::AddStacks);
+    InventoryComponent->OnItemRemoved.AddDynamic(Grid_PlayerInventory, &UInv_InventoryGrid::OnItemRemoved);
+    
+    // Load existing items
+    LoadInventoryItems();
+}
+
+void UInv_SpatialStorage::LoadInventoryItems()
+{
+    if (!IsValid(Grid_PlayerInventory) || !IsValid(InventoryComponent)) return;
+    
+    // Clear the grid first
+    Grid_PlayerInventory->ClearGrid();
+    
+    // Load existing inventory items matching the current category
+    const auto& InventoryList = InventoryComponent->GetInventoryList();
+    for (UInv_InventoryItem* Item : InventoryList.GetAllItems())
+    {
+        if (IsValid(Item) && Item->GetItemManifest().GetItemCategory() == CurrentStorageType)
+        {
+            Grid_PlayerInventory->AddItem(Item);
+        }
+    }
+}
+
+void UInv_SpatialStorage::SynchronizeWithMainInventory()
+{
+    // This ensures the storage inventory grid stays in sync with the main inventory
+    if (IsValid(Grid_PlayerInventory))
+    {
+        LoadInventoryItems();
+    }
+}
+
 void UInv_SpatialStorage::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
     Super::NativeTick(MyGeometry, InDeltaTime);
     
-    if (Grid_Storage->HasHoverItem() || Grid_PlayerInventory->HasHoverItem())
-    {
-        HandleCrossGridTransfer();
-    }
+    // Handle cross-grid interaction
+    HandleCrossGridInteraction();
     
-    HandleGridHovering();
+    // Update item description position if visible
     if (IsValid(ItemDescription))
     {
         SetItemDescriptionSizeAndPosition(ItemDescription, CanvasPanel);
     }
 }
 
-// In Inv_SpatialStorage.cpp, update the transfer logic:
+void UInv_SpatialStorage::HandleCrossGridInteraction()
+{
+    // Update cross-grid hovering to show proper highlights
+    UpdateCrossGridHovering();
+}
 
-FReply UInv_SpatialStorage::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& MouseEvent)
+void UInv_SpatialStorage::UpdateCrossGridHovering()
 {
     FVector2D MousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetOwningPlayer());
     
-    // Determine which grid has the hover item and which is the target
-    UInv_InventoryGrid* SourceGrid = GetActiveHoverGrid();
-    UInv_InventoryGrid* TargetGrid = GetTargetGrid(MousePos);
+    // Get the grid that has a hover item
+    UInv_InventoryGrid* ActiveGrid = GetActiveHoverGrid();
+    if (!IsValid(ActiveGrid)) return;
     
-    if (IsValid(SourceGrid) && IsValid(TargetGrid) && SourceGrid != TargetGrid)
+    UInv_HoverItem* HoverItem = ActiveGrid->GetHoverItem();
+    if (!IsValid(HoverItem)) return;
+    
+    // Determine which grid the mouse is over
+    UInv_InventoryGrid* TargetGrid = GetTargetGrid(MousePos);
+    if (!IsValid(TargetGrid)) return;
+    
+    // If hovering over a different grid, update its tile parameters
+    if (ActiveGrid != TargetGrid)
     {
-        UInv_HoverItem* HoverItem = SourceGrid->GetHoverItem();
-        if (IsValid(HoverItem) && IsValid(HoverItem->GetInventoryItem()))
+        // Set the hover item on the target grid temporarily for proper highlighting
+        if (!TargetGrid->HasHoverItem())
         {
-            UInv_InventoryItem* Item = HoverItem->GetInventoryItem();
+            // Get the grid dimensions from the hover item
+            const FIntPoint Dimensions = HoverItem->GetGridDimensions();
             
-            // Transfer from player inventory to storage
-            if (SourceGrid == Grid_PlayerInventory && TargetGrid == Grid_Storage)
-            {
-                // Check if item matches storage type
-                if (CurrentStorageType == EInv_ItemCategory::None || 
-                    Item->GetItemManifest().GetItemCategory() == CurrentStorageType)
-                {
-                    StorageComponent->TryAddItemToStorage(Item, CurrentPageIndex);
-                    SourceGrid->ClearHoverItem();
-                    return FReply::Handled();
-                }
-            }
-            // Transfer from storage to player inventory
-            else if (SourceGrid == Grid_Storage && TargetGrid == Grid_PlayerInventory)
-            {
-                // Create a temporary item component from the storage item
-                UInv_ItemComponent* TempItemComp = NewObject<UInv_ItemComponent>(this);
-                
-                // Copy the item manifest from the storage item
-                TempItemComp->InitItemManifest(Item->GetItemManifest());
-                
-                // If the item is stackable, set the stack count from the hover item
-                if (Item->IsStackable() && HoverItem->IsStackable())
-                {
-                    FInv_ItemManifest TempManifest = Item->GetItemManifest();
-                    if (FInv_StackableFragment* StackableFragment = 
-                        TempManifest.GetFragmentOfTypeMutable<FInv_StackableFragment>())
-                    {
-                        StackableFragment->SetStackCount(HoverItem->GetStackCount());
-                    }
-                    TempItemComp->InitItemManifest(TempManifest);
-                }
-                
-                // Try to add the item to inventory
-                InventoryComponent->TryAddItem(TempItemComp);
-                
-                // Remove from storage
-                StorageComponent->TryRemoveItemFromStorage(Item);
-                
-                // Clear the hover item
-                SourceGrid->ClearHoverItem();
-                return FReply::Handled();
-            }
+            // Update the target grid's highlighting
+            FVector2D GridPos = UInv_WidgetUtils::GetWidgetPosition(TargetGrid);
+            TargetGrid->SetTemporaryHoverItem(HoverItem);
+            TargetGrid->UpdateTileParameters(GridPos, MousePos);
         }
+    }
+    else
+    {
+        // Clear temporary hover items from other grids
+        if (ActiveGrid == Grid_PlayerInventory && IsValid(Grid_Storage))
+        {
+            Grid_Storage->ClearTemporaryHoverItem();
+        }
+        else if (ActiveGrid == Grid_Storage && IsValid(Grid_PlayerInventory))
+        {
+            Grid_PlayerInventory->ClearTemporaryHoverItem();
+        }
+    }
+}
+
+FReply UInv_SpatialStorage::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& MouseEvent)
+{
+    if (TryTransferHoveredItem())
+    {
+        return FReply::Handled();
     }
     
     // Let grids handle their own drops
@@ -219,52 +228,105 @@ FReply UInv_SpatialStorage::NativeOnMouseButtonDown(const FGeometry& InGeometry,
     return FReply::Handled();
 }
 
-// Add these callback methods:
-void UInv_SpatialStorage::OnInventoryItemAdded(UInv_InventoryItem* Item)
-{
-    // This will trigger the hover system
-    if (IsValid(Grid_PlayerInventory))
-    {
-        Grid_PlayerInventory->AddItem(Item);
-    }
-}
-
-void UInv_SpatialStorage::OnStorageItemAdded(UInv_InventoryItem* Item)
-{
-    if (IsValid(Grid_Storage))
-    {
-        Grid_Storage->AddItem(Item);
-    }
-}
-
-void UInv_SpatialStorage::HandleCrossGridTransfer() const
+bool UInv_SpatialStorage::TryTransferHoveredItem()
 {
     FVector2D MousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetOwningPlayer());
     
-    // Check which grid the mouse is over
-    if (Grid_Storage->HasHoverItem())
+    UInv_InventoryGrid* SourceGrid = GetActiveHoverGrid();
+    UInv_InventoryGrid* TargetGrid = GetTargetGrid(MousePos);
+    
+    if (!IsValid(SourceGrid) || !IsValid(TargetGrid) || SourceGrid == TargetGrid)
+        return false;
+    
+    UInv_HoverItem* HoverItem = SourceGrid->GetHoverItem();
+    if (!IsValid(HoverItem) || !IsValid(HoverItem->GetInventoryItem()))
+        return false;
+    
+    UInv_InventoryItem* Item = HoverItem->GetInventoryItem();
+    
+    // Transfer from player inventory to storage
+    if (SourceGrid == Grid_PlayerInventory && TargetGrid == Grid_Storage)
     {
-        // If hovering over player inventory grid
+        // Check if item matches storage type
+        if (CurrentStorageType == EInv_ItemCategory::None || 
+            Item->GetItemManifest().GetItemCategory() == CurrentStorageType)
+        {
+            // Add to storage
+            StorageComponent->TryAddItemToStorage(Item, CurrentPageIndex);
+            
+            // Remove from inventory grid and actual inventory
+            Grid_PlayerInventory->RemoveItemFromGrid(Item, HoverItem->GetPreviousGridIndex());
+            InventoryComponent->Server_DropItem(Item, HoverItem->GetStackCount());
+            
+            // Clear hover item and temporary hover items
+            SourceGrid->ClearHoverItem();
+            TargetGrid->ClearTemporaryHoverItem();
+            return true;
+        }
+    }
+    // Transfer from storage to player inventory
+    else if (SourceGrid == Grid_Storage && TargetGrid == Grid_PlayerInventory)
+    {
+        // Create a temporary item component for the transfer
+        UInv_ItemComponent* TempItemComp = NewObject<UInv_ItemComponent>(this);
+        TempItemComp->InitItemManifest(Item->GetItemManifest());
+        
+        if (Item->IsStackable())
+        {
+            FInv_ItemManifest TempManifest = Item->GetItemManifest();
+            if (FInv_StackableFragment* StackableFragment = 
+                TempManifest.GetFragmentOfTypeMutable<FInv_StackableFragment>())
+            {
+                StackableFragment->SetStackCount(HoverItem->GetStackCount());
+            }
+            TempItemComp->InitItemManifest(TempManifest);
+        }
+        
+        // Add to inventory
+        InventoryComponent->TryAddItem(TempItemComp);
+        
+        // Remove from storage
+        StorageComponent->TryRemoveItemFromStorage(Item);
+        
+        // Clear hover item and temporary hover items
+        SourceGrid->ClearHoverItem();
+        TargetGrid->ClearTemporaryHoverItem();
+        return true;
+    }
+    
+    return false;
+}
+
+UInv_InventoryGrid* UInv_SpatialStorage::GetActiveHoverGrid() const
+{
+    if (IsValid(Grid_PlayerInventory) && Grid_PlayerInventory->HasHoverItem())
+        return Grid_PlayerInventory;
+    if (IsValid(Grid_Storage) && Grid_Storage->HasHoverItem())
+        return Grid_Storage;
+    return nullptr;
+}
+
+UInv_InventoryGrid* UInv_SpatialStorage::GetTargetGrid(const FVector2D& MousePos) const
+{
+    // Check player inventory grid
+    if (IsValid(Grid_PlayerInventory))
+    {
         FVector2D GridPos = UInv_WidgetUtils::GetWidgetPosition(Grid_PlayerInventory);
         FVector2D GridSize = UInv_WidgetUtils::GetWidgetSize(Grid_PlayerInventory);
-        
         if (UInv_WidgetUtils::IsWithinBounds(GridPos, GridSize, MousePos))
-        {
-            // Allow Grid_PlayerInventory to handle the hover item
-            Grid_PlayerInventory->UpdateTileParameters(GridPos, MousePos);
-        }
+            return Grid_PlayerInventory;
     }
-    else if (Grid_PlayerInventory->HasHoverItem())
+    
+    // Check storage grid
+    if (IsValid(Grid_Storage))
     {
-        // Similar logic for storage grid
         FVector2D GridPos = UInv_WidgetUtils::GetWidgetPosition(Grid_Storage);
         FVector2D GridSize = UInv_WidgetUtils::GetWidgetSize(Grid_Storage);
-        
         if (UInv_WidgetUtils::IsWithinBounds(GridPos, GridSize, MousePos))
-        {
-            Grid_Storage->UpdateTileParameters(GridPos, MousePos);
-        }
+            return Grid_Storage;
     }
+    
+    return nullptr;
 }
 
 void UInv_SpatialStorage::SetStorageType(EInv_ItemCategory Category)
@@ -279,6 +341,13 @@ void UInv_SpatialStorage::SetStorageType(EInv_ItemCategory Category)
     if (IsValid(Grid_Storage))
     {
         Grid_Storage->SetStorageType(Category);
+    }
+    
+    // Update player inventory grid to show matching category
+    if (IsValid(Grid_PlayerInventory))
+    {
+        Grid_PlayerInventory->SetItemCategory(Category);
+        LoadInventoryItems();
     }
     
     // Update UI text
@@ -306,6 +375,121 @@ void UInv_SpatialStorage::SetStorageType(EInv_ItemCategory Category)
     RefreshStoragePage();
 }
 
+// Item Description Methods
+void UInv_SpatialStorage::OnItemHovered(UInv_InventoryItem* Item)
+{
+    if (!IsValid(Item)) return;
+    
+    // Make sure we have a valid ItemDescriptionClass
+    if (!ItemDescriptionClass)
+    {
+        UE_LOG(LogInventory, Warning, TEXT("ItemDescriptionClass is null, cannot create item description"));
+        return;
+    }
+    
+    const auto& Manifest = Item->GetItemManifest();
+    EInv_ItemRarity Rarity = Manifest.GetItemRarity();
+    UInv_ItemDescription* DescriptionWidget = GetItemDescription(Rarity, true);
+    
+    if (!IsValid(DescriptionWidget))
+    {
+        UE_LOG(LogInventory, Warning, TEXT("Failed to create ItemDescription widget"));
+        return;
+    }
+    
+    DescriptionWidget->SetVisibility(ESlateVisibility::Collapsed);
+    
+    GetOwningPlayer()->GetWorldTimerManager().ClearTimer(DescriptionTimer);
+    FTimerDelegate DescriptionTimerDelegate;
+    DescriptionTimerDelegate.BindLambda([this, Item, Rarity]()
+    {
+        if (!IsValid(Item) || !IsValid(this)) return;
+        
+        UInv_ItemDescription* Widget = GetItemDescription(Rarity, true);
+        if (IsValid(Widget))
+        {
+            Widget->SetVisibility(ESlateVisibility::HitTestInvisible);
+            Item->GetItemManifest().AssimilateInventoryFragments(Widget);
+        }
+    });
+    
+    GetOwningPlayer()->GetWorldTimerManager().SetTimer(
+        DescriptionTimer,
+        DescriptionTimerDelegate,
+        DescriptionTimerDelay,
+        false
+    );
+}
+
+void UInv_SpatialStorage::OnItemUnhovered()
+{
+    if (IsValid(ItemDescription))
+    {
+        ItemDescription->SetVisibility(ESlateVisibility::Collapsed);
+    }
+    GetOwningPlayer()->GetWorldTimerManager().ClearTimer(DescriptionTimer);
+}
+
+bool UInv_SpatialStorage::HasHoverItem() const
+{
+    return (IsValid(Grid_PlayerInventory) && Grid_PlayerInventory->HasHoverItem()) ||
+           (IsValid(Grid_Storage) && Grid_Storage->HasHoverItem());
+}
+
+UInv_HoverItem* UInv_SpatialStorage::GetHoverItem() const
+{
+    if (IsValid(Grid_PlayerInventory) && Grid_PlayerInventory->HasHoverItem())
+        return Grid_PlayerInventory->GetHoverItem();
+    if (IsValid(Grid_Storage) && Grid_Storage->HasHoverItem())
+        return Grid_Storage->GetHoverItem();
+    return nullptr;
+}
+
+UInv_ItemDescription* UInv_SpatialStorage::GetItemDescription(const EInv_ItemRarity& Rarity, bool UseRarity)
+{
+    if (!IsValid(ItemDescription))
+    {
+        if (!ItemDescriptionClass)
+        {
+            UE_LOG(LogInventory, Error, TEXT("Cannot create ItemDescription - ItemDescriptionClass is null"));
+            return nullptr;
+        }
+        
+        ItemDescription = CreateWidget<UInv_ItemDescription>(GetOwningPlayer(), ItemDescriptionClass);
+        if (IsValid(ItemDescription) && IsValid(CanvasPanel))
+        {
+            CanvasPanel->AddChild(ItemDescription);
+        }
+    }
+    
+    if (IsValid(ItemDescription) && UseRarity) 
+    {
+        ItemDescription->SetRarity(Rarity);
+    }
+    
+    return ItemDescription;
+}
+
+void UInv_SpatialStorage::SetItemDescriptionSizeAndPosition(UInv_ItemDescription* Description, UCanvasPanel* Canvas) const
+{
+    if (!IsValid(Description) || !IsValid(Canvas)) return;
+    
+    UCanvasPanelSlot* ItemDescriptionCPS = UWidgetLayoutLibrary::SlotAsCanvasSlot(Description);
+    if (!IsValid(ItemDescriptionCPS)) return;
+    
+    const FVector2D ItemDescriptionSize = Description->GetBoxSize();
+    ItemDescriptionCPS->SetSize(ItemDescriptionSize);
+    
+    FVector2D ClampedPosition = UInv_WidgetUtils::GetClampedWidgetPosition(
+        UInv_WidgetUtils::GetWidgetSize(Canvas),
+        ItemDescriptionSize,
+        UWidgetLayoutLibrary::GetMousePositionOnViewport(GetOwningPlayer())
+    );
+    
+    ItemDescriptionCPS->SetPosition(ClampedPosition);
+}
+
+// Navigation methods remain the same...
 void UInv_SpatialStorage::RefreshStoragePage()
 {
     if (IsValid(Grid_Storage))
@@ -356,7 +540,6 @@ void UInv_SpatialStorage::OnPageAdded()
 
 void UInv_SpatialStorage::UpdatePageDisplay() const
 {
-    // Update page number text
     if (IsValid(Text_PageNumber))
     {
         FText PageText = FText::Format(
@@ -367,7 +550,6 @@ void UInv_SpatialStorage::UpdatePageDisplay() const
         Text_PageNumber->SetText(PageText);
     }
     
-    // Update button states
     if (IsValid(Button_PreviousPage))
     {
         Button_PreviousPage->SetIsEnabled(CurrentPageIndex > 0);
@@ -382,137 +564,5 @@ void UInv_SpatialStorage::UpdatePageDisplay() const
     {
         Button_AddPage->SetIsEnabled(MaxPages < 20);
     }
-}
-
-// Override OnItemHovered and OnItemUnhovered (they're already declared but need implementation):
-void UInv_SpatialStorage::OnItemHovered(UInv_InventoryItem* Item)
-{
-    const auto& Manifest = Item->GetItemManifest();
-    EInv_ItemRarity Rarity = Manifest.GetItemRarity();
-    UInv_ItemDescription* DescriptionWidget = GetItemDescription();
-    DescriptionWidget->SetVisibility(ESlateVisibility::Collapsed);
-    
-    GetOwningPlayer()->GetWorldTimerManager().ClearTimer(DescriptionTimer);
-    FTimerDelegate DescriptionTimerDelegate;
-    DescriptionTimerDelegate.BindLambda([this, &Manifest, Rarity, DescriptionWidget]()
-    {
-        GetItemDescription(Rarity, true)->SetVisibility(ESlateVisibility::HitTestInvisible);
-        Manifest.AssimilateInventoryFragments(DescriptionWidget);
-    });
-    
-    GetOwningPlayer()->GetWorldTimerManager().SetTimer(
-        DescriptionTimer,
-        DescriptionTimerDelegate,
-        DescriptionTimerDelay,
-        false
-    );
-}
-
-void UInv_SpatialStorage::OnItemUnhovered()
-{
-    if (IsValid(ItemDescription))
-    {
-        ItemDescription->SetVisibility(ESlateVisibility::Collapsed);
-    }
-    GetOwningPlayer()->GetWorldTimerManager().ClearTimer(DescriptionTimer);
-}
-
-void UInv_SpatialStorage::TransferItemToStorage(UInv_InventoryItem* Item) const
-{
-    if (!IsValid(Item) || !IsValid(StorageComponent)) return;
-    
-    // Check if item matches the storage type
-    if (CurrentStorageType != EInv_ItemCategory::None && 
-        Item->GetItemManifest().GetItemCategory() != CurrentStorageType)
-    {
-        return;
-    }
-    
-    StorageComponent->Server_TransferToStorage(Item, CurrentPageIndex, Item->GetTotalStackCount());
-}
-
-void UInv_SpatialStorage::TransferItemToInventory(UInv_InventoryItem* Item) const
-{
-    if (!IsValid(Item) || !IsValid(StorageComponent)) return;
-    
-    StorageComponent->Server_TransferToInventory(Item, Item->GetTotalStackCount());
-}
-
-void UInv_SpatialStorage::SetItemDescriptionSizeAndPosition(UInv_ItemDescription* Description, UCanvasPanel* Canvas) const
-{
-    UCanvasPanelSlot* ItemDescriptionCPS = UWidgetLayoutLibrary::SlotAsCanvasSlot(Description);
-    if (!IsValid(ItemDescriptionCPS)) return;
-    
-    const FVector2D ItemDescriptionSize = Description->GetBoxSize();
-    ItemDescriptionCPS->SetSize(ItemDescriptionSize);
-    
-    FVector2D ClampedPosition = UInv_WidgetUtils::GetClampedWidgetPosition(
-        UInv_WidgetUtils::GetWidgetSize(Canvas),
-        ItemDescriptionSize,
-        UWidgetLayoutLibrary::GetMousePositionOnViewport(GetOwningPlayer())
-    );
-    
-    ItemDescriptionCPS->SetPosition(ClampedPosition);
-}
-
-UInv_ItemDescription* UInv_SpatialStorage::GetItemDescription(const EInv_ItemRarity& Rarity, bool UseRarity)
-{
-    if (!IsValid(ItemDescription))
-    {
-        ItemDescription = CreateWidget<UInv_ItemDescription>(GetOwningPlayer(), ItemDescriptionClass);
-		
-        CanvasPanel->AddChild(ItemDescription);
-    }
-    // Assign Rarity Image Background
-    if (UseRarity) ItemDescription->SetRarity(Rarity);
-    return ItemDescription;
-}
-
-void UInv_SpatialStorage::HandleGridHovering() const
-{
-    FVector2D MousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetOwningPlayer());
-    
-    // Get the grid that has a hover item
-    UInv_InventoryGrid* ActiveGrid = GetActiveHoverGrid();
-    if (!IsValid(ActiveGrid))
-        return;
-    
-    // Get the grid the mouse is over
-    UInv_InventoryGrid* TargetGrid = GetTargetGrid(MousePos);
-    if (!IsValid(TargetGrid))
-        return;
-    
-    // If hovering over a different grid, update its tile parameters
-    if (ActiveGrid != TargetGrid)
-    {
-        FVector2D GridPos = UInv_WidgetUtils::GetWidgetPosition(TargetGrid);
-        TargetGrid->UpdateTileParameters(GridPos, MousePos);
-    }
-}
-
-UInv_InventoryGrid* UInv_SpatialStorage::GetActiveHoverGrid() const
-{
-    if (Grid_PlayerInventory->HasHoverItem())
-        return Grid_PlayerInventory;
-    if (Grid_Storage->HasHoverItem())
-        return Grid_Storage;
-    return nullptr;
-}
-
-UInv_InventoryGrid* UInv_SpatialStorage::GetTargetGrid(const FVector2D& MousePos) const
-{
-    FVector2D PlayerInvPos = UInv_WidgetUtils::GetWidgetPosition(Grid_PlayerInventory);
-    FVector2D PlayerInvSize = UInv_WidgetUtils::GetWidgetSize(Grid_PlayerInventory);
-    
-    if (UInv_WidgetUtils::IsWithinBounds(PlayerInvPos, PlayerInvSize, MousePos))
-        return Grid_PlayerInventory;
-    
-    FVector2D StoragePos = UInv_WidgetUtils::GetWidgetPosition(Grid_Storage);
-    FVector2D StorageSize = UInv_WidgetUtils::GetWidgetSize(Grid_Storage);
-    
-    if (UInv_WidgetUtils::IsWithinBounds(StoragePos, StorageSize, MousePos))
-        return Grid_Storage;
-    
-    return nullptr;
 }
 /*-------------------------------------------------------------------------*/

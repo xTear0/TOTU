@@ -63,6 +63,30 @@ public:
 	void OnHide();
 	void UpdateTileParameters(const FVector2D& CanvasPosition, const FVector2D& MousePosition);
 	void SetAutoBindToInventory(bool bShouldBind) { bAutoBindInventory = bShouldBind; }
+
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void SetInventoryComponent(UInv_InventoryComponent* Component) { InventoryComponent = Component; }
+    
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void SetTemporaryHoverItem(UInv_HoverItem* TempHoverItem) { TemporaryHoverItem = TempHoverItem; }
+    
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void ClearTemporaryHoverItem() { TemporaryHoverItem = nullptr; }
+    
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void SetHoverItemReference(UInv_InventoryGrid* OtherGrid) { HoverItemReferenceGrid = OtherGrid; }
+    
+	UFUNCTION()
+	void OnItemRemoved(UInv_InventoryItem* Item);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void SetItemCategory(EInv_ItemCategory Category) { ItemCategory = Category; }
+    
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	virtual void ClearGrid();
+
+	void RemoveItemFromGrid(const UInv_InventoryItem* InventoryItem, const int32 GridIndex);
 	
 protected:
 	bool bAutoBindInventory = true;
@@ -71,7 +95,6 @@ protected:
 	FInv_SlotAvailabilityResult HasRoomForItem(const FInv_ItemManifest& Manifest, const int32 StackAmountOverride = -1);
 	void AddItemAtIndex(UInv_InventoryItem* Item, const int32 Index, const bool bStackable, const int32 StackAmount);
 	void UpdateGridSlots(UInv_InventoryItem* NewItem, const int32 Index, bool bStackableItem, const int32 StackAmount);
-	void RemoveItemFromGrid(const UInv_InventoryItem* InventoryItem, const int32 GridIndex);
 	void ConstructGrid();
 	
 	UPROPERTY()
@@ -133,7 +156,10 @@ private:
 	
 	FIntPoint CalculateHoveredCoordinates(const FVector2D& CanvasPosition, const FVector2D& MousePosition) const;
 	EInv_TileQuadrant CalculateQuadrant(const FVector2D& CanvasPosition, const FVector2D& MousePosition) const;
+	
 	void OnTileParametersUpdated(const FInv_TileParameters& Parameters);
+	void OnTileParametersUpdated(const FInv_TileParameters& Parameters, UInv_HoverItem* ActiveHoverItem);
+	
 	static FIntPoint CalculateStartingCoordinate(const FIntPoint& Coordinate, const FIntPoint& Dimensions, const EInv_TileQuadrant Quadrant);
 	FInv_SpaceQueryResult CheckHoverPosition(const FIntPoint& Position, const FIntPoint& Dimensions);
 	bool CursorExitedCanvas(const FVector2D& BoundaryPos, const FVector2D& BoundarySize, const FVector2D& Location);
@@ -195,7 +221,11 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TSubclassOf<UInv_SlottedItem> SlottedItemClass;
 
-
+	UPROPERTY()
+	TObjectPtr<UInv_HoverItem> TemporaryHoverItem;
+    
+	UPROPERTY()
+	TObjectPtr<UInv_InventoryGrid> HoverItemReferenceGrid;
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	int32 Rows;
