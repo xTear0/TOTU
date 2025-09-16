@@ -5,6 +5,7 @@
 #include "IDetailTreeNode.h"
 #include "Types/Inv_EnumTypes.h"
 #include "Widgets/Composite/Inv_Composite.h"
+#include "Widgets/Inventory/SlottedItems/Inv_SlottedItem.h"
 #include "Inv_ItemDescription.generated.h"
 /*-------------------------------------------------------------------------*/
 
@@ -35,15 +36,13 @@ public:
 	virtual void SetVisibility(ESlateVisibility InVisibility) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	EInv_ItemRarity& GetRarity() { return ItemRarity; }
-	
-	void SetRarity(const EInv_ItemRarity& Rarity) {  ItemRarity = Rarity; }
+	FInv_ItemData& GetItemData() { return ItemData; }
+
+	void SetItemData(const FInv_ItemData& InData) { ItemData = InData; }
 	
 private:
-
-	UPROPERTY()
-	EInv_ItemRarity ItemRarity{EInv_ItemRarity::Common}; 
 	
+	FInv_ItemData ItemData;
 	
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<USizeBox> SizeBox;

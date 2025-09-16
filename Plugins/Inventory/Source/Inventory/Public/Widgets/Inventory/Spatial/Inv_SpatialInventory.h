@@ -2,7 +2,9 @@
 /*-------------------------------------------------------------------------*/
 #pragma once
 #include "CoreMinimal.h"
+#include "Chaos/Deformable/MuscleActivationConstraints.h"
 #include "Widgets/Inventory/InventoryBase/Inv_InventoryBase.h"
+#include "Widgets/Inventory/SlottedItems/Inv_SlottedItem.h"
 #include "Inv_SpatialInventory.generated.h"
 /*-------------------------------------------------------------------------*/
 
@@ -103,7 +105,10 @@ private:
 	UPROPERTY()
 	TObjectPtr<UInv_ItemAttributeBreakdown> AttributeInspectBreakdown;
 
-	UInv_ItemDescription* GetItemDescription(const EInv_ItemRarity& Rarity = {EInv_ItemRarity::Common}, bool UseRarity = {false});
+	static FInv_ItemData MakeItemData(UInv_InventoryItem* InventoryItem);
+	static FInv_ItemData MakeEmptyItemData();
+	
+	UInv_ItemDescription* GetItemDescription(const FInv_ItemData& InData = MakeEmptyItemData(), bool UseRarity = {false});
 	UInv_ItemAttributeBreakdown* GetAttributeBreakdown();
 	
 	FTimerHandle DescriptionTimer;				// Item Description timer handle, the delay before showing it.

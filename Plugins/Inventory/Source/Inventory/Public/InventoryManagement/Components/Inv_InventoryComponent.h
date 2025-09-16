@@ -35,6 +35,7 @@ class INVENTORY_API UInv_InventoryComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
+	
 	UInv_InventoryComponent();
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 

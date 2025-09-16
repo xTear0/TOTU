@@ -33,6 +33,27 @@ enum class EInv_ItemRarity : uint8
 };
 
 UENUM(BlueprintType)
+enum class EInv_ItemSpecialType : uint8
+{
+	Prismatic,
+	Ethereal,
+	Netherborn,
+	Eldritch,
+	Runescribed,
+	None
+};
+
+UENUM(BlueprintType)
+enum class EInv_ItemEnhancement : uint8
+{
+	Prime,
+	Enchanted,
+	Corrupted,
+	Cursed,
+	None
+};
+
+UENUM(BlueprintType)
 enum class EInv_ItemStar : uint8
 {
 	NoStars,

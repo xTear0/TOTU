@@ -29,9 +29,19 @@ void UInv_SlottedItem::NativeOnMouseLeave(const FPointerEvent& MouseEvent)
 	UInv_InventoryStatics::ItemUnhovered(GetOwningPlayer());	
 }
 
+FVector2D UInv_SlottedItem::GetImageSize()
+{
+	return Image_Icon->GetBrush().GetImageSize();
+}
+
 void UInv_SlottedItem::SetInventoryItem(UInv_InventoryItem* Item)
 {
 	InventoryItem = Item;
+	SetItemData(
+		Item->GetItemManifestMutable().GetItemRarity(),
+		Item->GetItemManifestMutable().GetItemSpecialType(),
+		Item->GetItemManifestMutable().GetItemEnhancement()
+		);
 }
 
 void UInv_SlottedItem::SetImageBrush(const FSlateBrush& Brush) const
@@ -50,6 +60,13 @@ void UInv_SlottedItem::UpdateStackCount(int32 StackCount)
 	{
 		Text_StackCount->SetVisibility(ESlateVisibility::Collapsed);
 	}
+}
+
+void UInv_SlottedItem::SetItemData(EInv_ItemRarity Rarity, EInv_ItemSpecialType Type, EInv_ItemEnhancement Enhancement)
+{
+	ItemData.SpecialType = Type;
+	ItemData.Enhancement = Enhancement;
+	ItemData.Rarity = Rarity;
 }
 #pragma endregion
 /*-------------------------------------------------------------------------*/

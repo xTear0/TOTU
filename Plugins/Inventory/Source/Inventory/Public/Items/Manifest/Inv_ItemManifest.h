@@ -64,6 +64,8 @@ struct INVENTORY_API FInv_ItemManifest
 	UInv_InventoryItem* Manifest(UObject* NewOuter, UInv_ItemComponent* OwningComponent);
 	EInv_ItemCategory GetItemCategory() const { return ItemCategory; }
 	EInv_ItemRarity GetItemRarity() const { return ItemRarity; }
+	EInv_ItemSpecialType GetItemSpecialType() const { return ItemSpecialType; }
+	EInv_ItemEnhancement GetItemEnhancement() const { return ItemEnhancement; }
 	int32 GetItemSellValue() const { return SellValue; }
 	FGameplayTag GetItemType() const { return ItemType; }
 	int32 GetItemAttributeValue(FGameplayTag AttributeTag) const;
@@ -127,6 +129,12 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	EInv_ItemStar ItemStars{EInv_ItemStar::NoStars};
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	EInv_ItemSpecialType ItemSpecialType{EInv_ItemSpecialType::None};
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	EInv_ItemEnhancement ItemEnhancement{EInv_ItemEnhancement::None};
 	
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TArray<FInv_ItemAttributePair> ItemAttributesContainer;

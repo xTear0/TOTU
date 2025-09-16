@@ -48,11 +48,17 @@ void UInv_InventoryComponent::TryAddItem(UInv_ItemComponent* ItemComponent)
 {
 	// Is the item being added to the TreasureMenu or the InventoryMenu?
 	
-	
 	FInv_SlotAvailabilityResult Result = InventoryMenu->HasRoomForItem(ItemComponent);
 	
 	UInv_InventoryItem* FoundItem = InventoryList.FindFirstItemByType(ItemComponent->GetItemManifest().GetItemType());
-	
+
+	// Add these debug lines to investigate:
+	UE_LOG(LogTemp, Warning, TEXT("ItemComponent: %s"), ItemComponent ? TEXT("Valid") : TEXT("NULL"));
+	if (ItemComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ItemType: %s"), *ItemComponent->GetItemManifest().GetItemType().ToString());
+	}
+	UE_LOG(LogTemp, Warning, TEXT("FoundItem: %s"), FoundItem ? TEXT("Valid") : TEXT("NULL"));
 	 
 	Result.Item = FoundItem;
 	
@@ -74,7 +80,6 @@ void UInv_InventoryComponent::TryAddItem(UInv_ItemComponent* ItemComponent)
 		// This item type doesn't exist in the inventory. Create a new one and update all pertinent slots.
 		Server_AddNewItem(ItemComponent, Result.bStackable ? Result.TotalRoomToFill : 0);
 	}
-
 }
 
 void UInv_InventoryComponent::Server_AddNewItem_Implementation(UInv_ItemComponent* ItemComponent, int32 StackCount)

@@ -3,6 +3,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Types/Inv_EnumTypes.h"
 #include "Inv_SlottedItem.generated.h"
 /*-------------------------------------------------------------------------*/
 
@@ -16,6 +17,21 @@ class UInv_InventoryItem;
 class UTextBlock;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSlottedItemClick, int32, GridIndex, const FPointerEvent&, MouseEvent);
+
+USTRUCT(BlueprintType)
+struct FInv_ItemData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
+	EInv_ItemRarity Rarity;
+	
+	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
+	EInv_ItemSpecialType SpecialType;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
+	EInv_ItemEnhancement Enhancement;
+};
 /*-------------------------------------------------------------------------*/
 
 
@@ -33,7 +49,14 @@ public:
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& MouseEvent) override;
 	virtual void NativeOnMouseEnter(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 	virtual void NativeOnMouseLeave(const FPointerEvent& MouseEvent) override;
+
+	// Blueprint Getters
 	
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	FVector2D GetImageSize();
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	FInv_ItemData GetItemData() { return ItemData; }
 	
 	bool IsStackable() const { return bIsStackable; }
 	void SetIsStackable(bool bStackable) { bIsStackable = bStackable; }
@@ -48,7 +71,11 @@ public:
 	void UpdateStackCount(int32 StackCount);
 
 	FSlottedItemClick OnSlottedItemClick;
+
+
 private:
+
+	void SetItemData(EInv_ItemRarity Rarity, EInv_ItemSpecialType Type, EInv_ItemEnhancement Enhancement);
 	
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> Image_Icon;
@@ -56,6 +83,7 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> Text_StackCount;
 	
+	FInv_ItemData ItemData;
 	int32 GridIndex;
 	FIntPoint GridDimensions;
 	TWeakObjectPtr<UInv_InventoryItem> InventoryItem;

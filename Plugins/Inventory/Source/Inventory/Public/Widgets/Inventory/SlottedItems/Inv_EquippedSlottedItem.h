@@ -36,6 +36,7 @@ public:
 	FEquippedSlottedItemClicked OnEquippedSlottedItemClicked;
 	
 private:
+	
 	UPROPERTY()
 	FGameplayTag EquippmentTypeTag;
 	

@@ -286,9 +286,14 @@ void UInv_SpatialInventory::OnItemHovered(UInv_InventoryItem* Item)
 
 	GetOwningPlayer()->GetWorldTimerManager().ClearTimer(DescriptionTimer);
 	FTimerDelegate DescriptionTimerDelegate;
+	
 	DescriptionTimerDelegate.BindLambda( [this, &Manifest, Rarity, DescriptionWidget] ()
 	{
-		GetItemDescription(Rarity, true)->SetVisibility(ESlateVisibility::HitTestInvisible);
+		FInv_ItemData InData;
+		InData.Rarity = Manifest.GetItemRarity();
+		InData.Enhancement = Manifest.GetItemEnhancement();
+		InData.SpecialType = Manifest.GetItemSpecialType();
+		GetItemDescription(InData, true)->SetVisibility(ESlateVisibility::HitTestInvisible);
 		Manifest.AssimilateInventoryFragments(DescriptionWidget);
 	});
 
@@ -346,7 +351,25 @@ float UInv_SpatialInventory::GetTileSize() const
 	return Grid_Equippables->GetTileSize();
 }
 
-UInv_ItemDescription* UInv_SpatialInventory::GetItemDescription(const EInv_ItemRarity& Rarity, bool UseRarity)
+FInv_ItemData UInv_SpatialInventory::MakeItemData(UInv_InventoryItem* InventoryItem)
+{
+	FInv_ItemData Data;
+	Data.Rarity = InventoryItem->GetItemManifestMutable().GetItemRarity();
+	Data.Enhancement = InventoryItem->GetItemManifestMutable().GetItemEnhancement();
+	Data.SpecialType = InventoryItem->GetItemManifestMutable().GetItemSpecialType();
+	return Data;
+}
+
+FInv_ItemData UInv_SpatialInventory::MakeEmptyItemData()
+{
+	FInv_ItemData Data;
+	Data.Rarity = EInv_ItemRarity::Common;
+	Data.Enhancement = EInv_ItemEnhancement::None;
+	Data.SpecialType = EInv_ItemSpecialType::None;
+	return Data;
+}
+
+UInv_ItemDescription* UInv_SpatialInventory::GetItemDescription(const FInv_ItemData& InData, bool UseRarity)
 {
 	if (!IsValid(ItemDescription))
 	{
@@ -355,7 +378,10 @@ UInv_ItemDescription* UInv_SpatialInventory::GetItemDescription(const EInv_ItemR
 		CanvasPanel->AddChild(ItemDescription);
 	}
 	// Assign Rarity Image Background
-	if (UseRarity) ItemDescription->SetRarity(Rarity);
+	if (UseRarity)
+	{
+		ItemDescription->SetItemData(InData);
+	}
 	return ItemDescription;
 }
 
