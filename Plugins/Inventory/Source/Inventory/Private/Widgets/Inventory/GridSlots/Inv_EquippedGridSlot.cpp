@@ -94,7 +94,7 @@ UInv_EquippedSlottedItem* UInv_EquippedGridSlot::OnItemEquipped(UInv_InventoryIt
 	Brush.DrawAs = ESlateBrushDrawType::Image;
 	Brush.ImageSize = DrawSize;
 	
-	EquippedSlottedItem->SetImageBrush(Brush);
+	EquippedSlottedItem->SetImageBrush(*ImageFragment->GetIcon(), DrawSize);
 
 	// Set the Occupied Brush on the Equipped Grid Slot
 	const FLinearColor RarityColor = Item ? UInv_WidgetUtils::GetHalfOpacityColorFromRarityEnum(Item->GetItemManifest().GetItemRarity()) : FLinearColor::White;

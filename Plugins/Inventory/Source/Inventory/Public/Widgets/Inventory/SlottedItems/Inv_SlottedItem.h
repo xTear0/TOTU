@@ -67,19 +67,37 @@ public:
 	FIntPoint GetGridDimensions() const { return GridDimensions; }
 	void SetInventoryItem(UInv_InventoryItem* Item);
 	UInv_InventoryItem* GetInventoryItem() const { return InventoryItem.Get(); }
-	void SetImageBrush(const FSlateBrush& Brush) const;
+	void SetImageBrush(const UTexture2D& Texture2D, const FVector2D& DrawSize) const;
 	void UpdateStackCount(int32 StackCount);
 
 	FSlottedItemClick OnSlottedItemClick;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	UMaterialInterface* BaseGlowMaterial;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	mutable UMaterialInterface* BaseGlintMaterial;
 
 private:
+	
+	// Material Management Functions
+	void CreateGlowDynamicMaterialInstance() const;
+	void CreateGlintDynamicMaterialInstance(const UTexture2D& Texture2D) const;
 
+	UPROPERTY()
+	mutable UMaterialInstanceDynamic* GlowDynamicMaterialInstance; // Item Glow
+
+	UPROPERTY()
+	mutable UMaterialInstanceDynamic* GlintDynamicMaterialInstance; // Item Glint
+	
 	void SetItemData(EInv_ItemRarity Rarity, EInv_ItemSpecialType Type, EInv_ItemEnhancement Enhancement);
 	
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> Image_Icon;
 
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> Image_Glow;
+	
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> Text_StackCount;
 	

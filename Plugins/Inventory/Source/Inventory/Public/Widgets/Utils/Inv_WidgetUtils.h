@@ -10,18 +10,80 @@
 
 
 /*-------------------------------------------------------------------------*/
+/*   Declarations                                                          */
+/*-------------------------------------------------------------------------*/
+struct FGameplayTag;
+struct FInv_ItemData;
+enum class EInv_ItemAttribute : uint8;
+
+
+USTRUCT(BlueprintType, Category = "Inventory")
+struct FInv_ItemGlowMaterialData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly)
+	FLinearColor RarityColor;
+
+	UPROPERTY(BlueprintReadOnly)
+	float GodRayIntensity = 0.f;
+
+	UPROPERTY(BlueprintReadOnly)
+	float GodRayPow = 0.f;
+
+	UPROPERTY(BlueprintReadOnly)
+	float DistortionGlow = 0.f;
+
+	UPROPERTY(BlueprintReadOnly)
+	float StarsBrightness = 0.f;
+
+	UPROPERTY(BlueprintReadOnly)
+	float PrismaticBlend = 0.f;
+
+	UPROPERTY(BlueprintReadOnly)
+	float PrismaticIntensity = 0.f;
+};
+
+USTRUCT(BlueprintType, Category = "Inventory")
+struct FInv_ItemGlintMaterialData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly)
+	FLinearColor GlintColor;
+
+	UPROPERTY(BlueprintReadOnly)
+	float ColorOpacity = 1.f;
+	
+	UPROPERTY(BlueprintReadOnly)
+	float PrismaticBlend = 0.f;
+};
+
+/*-------------------------------------------------------------------------*/
+
+
+
+/*-------------------------------------------------------------------------*/
 /*  Class Functionality									                   */
 /*-------------------------------------------------------------------------*/
 #pragma region Inv_WidgetUtils.h_Class
-struct FGameplayTag;
-enum class EInv_ItemAttribute : uint8;
-
 UCLASS()
 class INVENTORY_API UInv_WidgetUtils : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
 public:
+
+	// Static Functions for Fetching Material Data for Item Displays
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	static FInv_ItemGlowMaterialData GetItemGlowData(FInv_ItemData ItemData);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	static FInv_ItemGlintMaterialData GetItemGlintData(FInv_ItemData ItemData);
+
+	UFUNCTION(Exec, BlueprintCallable, Category = "Homework")
+	static FText GradeValueToLetter(int32 Value); // dw about this
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	static FVector2D GetWidgetPosition(UWidget* Widget);

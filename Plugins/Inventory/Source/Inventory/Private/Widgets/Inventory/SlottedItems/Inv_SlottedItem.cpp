@@ -44,9 +44,47 @@ void UInv_SlottedItem::SetInventoryItem(UInv_InventoryItem* Item)
 		);
 }
 
-void UInv_SlottedItem::SetImageBrush(const FSlateBrush& Brush) const
+void UInv_SlottedItem::SetImageBrush(const UTexture2D& Texture2D, const FVector2D& DrawSize) const
 {
-	Image_Icon->SetBrush(Brush);
+	CreateGlowDynamicMaterialInstance();
+	Image_Glow->SetBrushFromMaterial(GlowDynamicMaterialInstance);
+
+	CreateGlintDynamicMaterialInstance(Texture2D);
+	
+		FSlateBrush ItemBrush;
+		ItemBrush.SetResourceObject(GlintDynamicMaterialInstance);
+		ItemBrush.DrawAs = ESlateBrushDrawType::Image;
+		ItemBrush.ImageSize = DrawSize;
+	
+	Image_Icon->SetBrush(ItemBrush);
+}
+
+void UInv_SlottedItem::CreateGlowDynamicMaterialInstance() const
+{
+	check(BaseGlowMaterial != nullptr);
+	GlowDynamicMaterialInstance = UMaterialInstanceDynamic::Create(BaseGlowMaterial, nullptr);
+
+	FInv_ItemGlowMaterialData Data = UInv_WidgetUtils::GetItemGlowData(ItemData);
+	GlowDynamicMaterialInstance->SetVectorParameterValue(FName("Color"), Data.RarityColor);
+	GlowDynamicMaterialInstance->SetScalarParameterValue(FName("God Ray Intensity"), Data.GodRayIntensity);
+	GlowDynamicMaterialInstance->SetScalarParameterValue(FName("God Ray Pow"), Data.GodRayPow);
+	GlowDynamicMaterialInstance->SetScalarParameterValue(FName("Distortion Glow"), Data.DistortionGlow);
+	GlowDynamicMaterialInstance->SetScalarParameterValue(FName("Stars Brightness"), Data.StarsBrightness);
+	GlowDynamicMaterialInstance->SetScalarParameterValue(FName("Prismatic Blend"), Data.PrismaticBlend);
+	GlowDynamicMaterialInstance->SetScalarParameterValue(FName("Prismatic Intensity"), Data.PrismaticIntensity);
+}
+
+void UInv_SlottedItem::CreateGlintDynamicMaterialInstance(const UTexture2D& Texture2D) const
+{
+	check(BaseGlintMaterial != nullptr);
+	GlintDynamicMaterialInstance = UMaterialInstanceDynamic::Create(BaseGlintMaterial, nullptr);
+
+	FInv_ItemGlintMaterialData Data = UInv_WidgetUtils::GetItemGlintData(ItemData);
+	GlintDynamicMaterialInstance->SetVectorParameterValue(FName("Color"), Data.GlintColor);
+	GlintDynamicMaterialInstance->SetTextureParameterValue(FName("Mask"), const_cast<UTexture2D*>(&Texture2D));
+	GlintDynamicMaterialInstance->SetTextureParameterValue(FName("Texture"), const_cast<UTexture2D*>(&Texture2D));
+	GlintDynamicMaterialInstance->SetScalarParameterValue(FName("Color Opacity"), Data.ColorOpacity);
+	GlintDynamicMaterialInstance->SetScalarParameterValue(FName("Prismatic Blend"), Data.PrismaticBlend);
 }
 
 void UInv_SlottedItem::UpdateStackCount(int32 StackCount)

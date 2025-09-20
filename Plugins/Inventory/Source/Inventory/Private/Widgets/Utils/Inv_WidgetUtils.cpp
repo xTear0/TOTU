@@ -6,6 +6,7 @@
 #include "GameplayTagContainer.h"
 #include "Blueprint/SlateBlueprintLibrary.h"
 #include "Types/Inv_EnumTypes.h"
+#include "Widgets/Inventory/SlottedItems/Inv_SlottedItem.h"
 /*-------------------------------------------------------------------------*/
 
 
@@ -350,6 +351,130 @@ FText UInv_WidgetUtils::GetSignedAttributeValueFromInt(int32 RequestedValue)
 		NumberText);
 
 	return Result;
+}
+
+FInv_ItemGlowMaterialData UInv_WidgetUtils::GetItemGlowData(FInv_ItemData ItemData)
+{
+	FInv_ItemGlowMaterialData Data;
+	
+	if (ItemData.Rarity == EInv_ItemRarity::Supreme)
+	{
+		Data.GodRayIntensity = 0.6f;
+		Data.GodRayPow = 3.0f;
+		Data.DistortionGlow = 1.0f;
+		Data.StarsBrightness = 0.5f;
+	}
+	if (ItemData.Rarity == EInv_ItemRarity::Mythical)
+	{
+		Data.GodRayIntensity = 0.7f;
+		Data.GodRayPow = 3.0f;
+		Data.DistortionGlow = 0.88f;
+		Data.StarsBrightness = 0.4f;
+	}
+	if (ItemData.Rarity == EInv_ItemRarity::Legendary)
+	{
+		Data.GodRayIntensity = 0.8f;
+		Data.GodRayPow = 3.0f;
+		Data.DistortionGlow = 0.66f;
+		Data.StarsBrightness = 0.3f;
+	}
+	if (ItemData.Rarity == EInv_ItemRarity::Epic)
+	{
+		Data.GodRayIntensity = 0.9f;
+		Data.GodRayPow = 3.0f;
+		Data.DistortionGlow = 0.44f;
+		Data.StarsBrightness = 0.1f;
+	}
+	if (ItemData.Rarity == EInv_ItemRarity::Rare
+		or
+		ItemData.Rarity == EInv_ItemRarity::Uncommon
+		or
+		ItemData.Rarity == EInv_ItemRarity::Common)
+	{
+		Data.GodRayIntensity = 10.0f;
+		Data.GodRayPow = 10.0f;
+		Data.DistortionGlow = 0.0f;
+		Data.StarsBrightness = 0.0f;
+	}
+
+	if  (ItemData.SpecialType == EInv_ItemSpecialType::Prismatic)
+	{
+		Data.PrismaticBlend = 0.33f;
+		Data.PrismaticIntensity = 120.0f;
+	} else
+	{
+		Data.PrismaticBlend = 0.0f;
+		Data.PrismaticIntensity = 0.0f;
+	}
+	
+	Data.RarityColor = GetColorFromRarityEnum(ItemData.Rarity);
+	return Data;
+}
+
+FInv_ItemGlintMaterialData UInv_WidgetUtils::GetItemGlintData(FInv_ItemData ItemData)
+{
+	FInv_ItemGlintMaterialData Data;
+
+	// Item has no Type and No Enhancement, it should have no color.
+	if (ItemData.SpecialType == EInv_ItemSpecialType::None
+		&&  ItemData.Enhancement == EInv_ItemEnhancement::None)
+	{
+		Data.ColorOpacity = 0.0f;
+		return Data; // Early return.
+	}
+	
+	if (ItemData.SpecialType == EInv_ItemSpecialType::Prismatic)
+	{
+		Data.PrismaticBlend = 1.25f;
+		Data.ColorOpacity = 1.f;
+		Data.GlintColor = FLinearColor::FromSRGBColor(FColor::FromHex("FF47ACFF"));
+	}
+	else
+	{
+		Data.PrismaticBlend = 0.0f;
+	}
+
+	if (ItemData.SpecialType == EInv_ItemSpecialType::Eldritch)
+	{
+		Data.ColorOpacity = -0.1f;
+		Data.GlintColor = FLinearColor::FromSRGBColor(FColor::FromHex("FFE3A1FF"));
+	}
+
+	if (ItemData.SpecialType == EInv_ItemSpecialType::Netherborn)
+	{
+		Data.ColorOpacity = 2.0f;
+		Data.GlintColor = FLinearColor::FromSRGBColor(FColor::FromHex("920F00FF"));
+	}
+
+	if (ItemData.SpecialType == EInv_ItemSpecialType::Ethereal)
+	{
+		Data.ColorOpacity = 0.35f;
+		Data.GlintColor = FLinearColor::FromSRGBColor(FColor::FromHex("ABFFF9FF"));
+	}
+
+	if (ItemData.SpecialType == EInv_ItemSpecialType::Runescribed)
+	{
+		Data.ColorOpacity = 0.77f;
+		Data.GlintColor = FLinearColor::FromSRGBColor(FColor::FromHex("00DE2FFF"));
+	}
+
+	// TODO: eventually enchantments will exist but im too lazy to add those rn
+	
+	return Data;
+}
+
+FText UInv_WidgetUtils::GradeValueToLetter(int32 Value)
+{
+	FString Text;
+	
+	if (Value >= 90) Text = TEXT("A");
+	if (Value <= 89 && Value > 79) Text = TEXT("B");
+	if (Value <= 79 && Value > 69) Text = TEXT("C");
+	if (Value <= 69) Text = TEXT("F");
+
+	UE_LOG(LogTemp, Warning, TEXT("Grade: %s"), *Text);
+	
+	return FText::FromString(Text);
 }
 
 FVector2D UInv_WidgetUtils::GetWidgetPosition(UWidget* Widget)

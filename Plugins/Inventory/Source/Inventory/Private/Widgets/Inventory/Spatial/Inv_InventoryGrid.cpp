@@ -833,11 +833,11 @@ FVector2D UInv_InventoryGrid::GetDrawSize(const FInv_GridFragment* GridFragment)
 void UInv_InventoryGrid::SetSlottedItemImage(const UInv_SlottedItem* SlottedItem, const FInv_GridFragment* GridFragment,
 	const FInv_ImageFragment* ImageFragment) const
 {
-	FSlateBrush Brush;
-	Brush.SetResourceObject(ImageFragment->GetIcon());
-	Brush.DrawAs = ESlateBrushDrawType::Image;
-	Brush.ImageSize = GetDrawSize(GridFragment);
-	SlottedItem->SetImageBrush(Brush);
+	//FSlateBrush Brush;
+	//Brush.SetResourceObject(ImageFragment->GetIcon());
+	//Brush.DrawAs = ESlateBrushDrawType::Image;
+	//Brush.ImageSize = GetDrawSize(GridFragment);
+	SlottedItem->SetImageBrush(*ImageFragment->GetIcon(), GetDrawSize(GridFragment));
 }
 
 void UInv_InventoryGrid::ConstructGrid()
