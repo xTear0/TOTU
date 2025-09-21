@@ -53,22 +53,29 @@ public:
 	// Blueprint Getters
 	
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	FVector2D GetImageSize();
+	FVector2D GetImageIconSize() const;
 
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	FVector2D GetImageGlowSize() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void SetGlowSize(FVector2D& NewGlowSize);
+	
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	FInv_ItemData GetItemData() { return ItemData; }
 	
 	bool IsStackable() const { return bIsStackable; }
 	void SetIsStackable(bool bStackable) { bIsStackable = bStackable; }
 	UImage* GetImageIcon() const { return Image_Icon; }
+	UImage* GetImageGlow() const { return Image_Glow; }
 	void SetGridIndex(int32 Index) { GridIndex = Index; }
 	int32 GetGridIndex() const { return GridIndex; }
 	void SetGridDimensions(const FIntPoint& Dimensions) { GridDimensions = Dimensions; }
 	FIntPoint GetGridDimensions() const { return GridDimensions; }
 	void SetInventoryItem(UInv_InventoryItem* Item);
 	UInv_InventoryItem* GetInventoryItem() const { return InventoryItem.Get(); }
-	void SetImageBrush(const UTexture2D& Texture2D, const FVector2D& DrawSize) const;
-	void UpdateStackCount(int32 StackCount);
+	virtual void SetImageBrush(const UTexture2D& Texture2D, const FVector2D& DrawSize) const;
+	void UpdateStackCount(int32 StackCount) const;
 
 	FSlottedItemClick OnSlottedItemClick;
 	
@@ -80,7 +87,7 @@ public:
 
 private:
 	
-	// Material Management Functions
+	// Material Management
 	void CreateGlowDynamicMaterialInstance() const;
 	void CreateGlintDynamicMaterialInstance(const UTexture2D& Texture2D) const;
 

@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "GameplayTagContainer.h"
+#include "Widgets/Inventory/SlottedItems/Inv_SlottedItem.h"
 #include "Inv_HoverItem.generated.h"
 /*-------------------------------------------------------------------------*/
 
@@ -32,7 +33,10 @@ class INVENTORY_API UInv_HoverItem : public UUserWidget
 	
 public:
 
-	void SetImageBrush(const FSlateBrush& Brush) const;
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	FInv_ItemData GetItemData() { return ItemData; }
+	
+	void SetImageBrush(const UTexture2D& Texture2D, const FVector2D& DrawSize) const;
 	void UpdateStackCount(const int32 Count);
 
 	FGameplayTag GetItemType() const;
@@ -46,14 +50,26 @@ public:
 	UInv_InventoryItem* GetInventoryItem() const;
 	void SetInventoryItem(UInv_InventoryItem* Item);
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	mutable UMaterialInterface* BaseGlintMaterial;
+	
 private:
+
+	// Material Management
+	void CreateGlintDynamicMaterialInstance(const UTexture2D& Texture2D) const;
+	
+	UPROPERTY()
+	mutable UMaterialInstanceDynamic* GlintDynamicMaterialInstance; // Item Glint
+
+	void SetItemData(EInv_ItemRarity Rarity, EInv_ItemSpecialType Type, EInv_ItemEnhancement Enhancement);
 	
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> Image_Icon;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> Text_StackCount;
-	
+
+	FInv_ItemData ItemData;
 	int32 PreviousGridIndex;
 	FIntPoint GridDimensions;
 	TWeakObjectPtr<UInv_InventoryItem> InventoryItem;

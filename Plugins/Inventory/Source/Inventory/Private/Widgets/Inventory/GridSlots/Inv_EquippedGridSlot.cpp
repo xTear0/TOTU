@@ -8,7 +8,6 @@
 #include "Components/OverlaySlot.h"
 #include "InventoryManagement/Utils/Inv_InventoryStatics.h"
 #include "Items/Inv_InventoryItem.h"
-#include "Items/Inv_ItemTags.h"
 #include "Items/Fragments/Inv_FragmentTags.h"
 #include "Items/Fragments/Inv_ItemFragment.h"
 #include "Widgets/Inventory/HoverItem/Inv_HoverItem.h"
@@ -97,7 +96,7 @@ UInv_EquippedSlottedItem* UInv_EquippedGridSlot::OnItemEquipped(UInv_InventoryIt
 	EquippedSlottedItem->SetImageBrush(*ImageFragment->GetIcon(), DrawSize);
 
 	// Set the Occupied Brush on the Equipped Grid Slot
-	const FLinearColor RarityColor = Item ? UInv_WidgetUtils::GetHalfOpacityColorFromRarityEnum(Item->GetItemManifest().GetItemRarity()) : FLinearColor::White;
+	const FLinearColor RarityColor = UInv_WidgetUtils::GetHalfOpacityColorFromRarityEnum(Item->GetItemManifest().GetItemRarity());
 	SetOccupiedTexture(RarityColor);
 	
 	// Add the Slotted Item as a child to this widget's Overlay.

@@ -420,6 +420,7 @@ FInv_ItemGlintMaterialData UInv_WidgetUtils::GetItemGlintData(FInv_ItemData Item
 		&&  ItemData.Enhancement == EInv_ItemEnhancement::None)
 	{
 		Data.ColorOpacity = 0.0f;
+		Data.PrismaticBlend = 0.0f;
 		return Data; // Early return.
 	}
 	

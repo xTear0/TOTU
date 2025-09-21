@@ -27,15 +27,17 @@ class INVENTORY_API UInv_EquippedSlottedItem : public UInv_SlottedItem
 	GENERATED_BODY()
 
 public:
-
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	void SetImageBrush(const UTexture2D& Texture2D, const FVector2D& DrawSize);
 	
 	void SetEquipmentTypeTag(const FGameplayTag& Tag) { EquippmentTypeTag = Tag; }
-	FGameplayTag GetEquipmentTypeTag() { return EquippmentTypeTag; }
+	FGameplayTag GetEquipmentTypeTag() const { return EquippmentTypeTag; }
 
 	FEquippedSlottedItemClicked OnEquippedSlottedItemClicked;
 	
 private:
+
+	void SetWidgetSize();
 	
 	UPROPERTY()
 	FGameplayTag EquippmentTypeTag;

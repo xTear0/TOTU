@@ -29,14 +29,25 @@ void UInv_SlottedItem::NativeOnMouseLeave(const FPointerEvent& MouseEvent)
 	UInv_InventoryStatics::ItemUnhovered(GetOwningPlayer());	
 }
 
-FVector2D UInv_SlottedItem::GetImageSize()
+FVector2D UInv_SlottedItem::GetImageIconSize() const
 {
 	return Image_Icon->GetBrush().GetImageSize();
+}
+
+FVector2D UInv_SlottedItem::GetImageGlowSize() const
+{
+	return  Image_Glow->GetBrush().GetImageSize();
+}
+
+void UInv_SlottedItem::SetGlowSize(FVector2D& NewGlowSize)
+{
+	GetImageGlow()->SetDesiredSizeOverride(NewGlowSize);
 }
 
 void UInv_SlottedItem::SetInventoryItem(UInv_InventoryItem* Item)
 {
 	InventoryItem = Item;
+	if (!Item) return;
 	SetItemData(
 		Item->GetItemManifestMutable().GetItemRarity(),
 		Item->GetItemManifestMutable().GetItemSpecialType(),
@@ -87,7 +98,7 @@ void UInv_SlottedItem::CreateGlintDynamicMaterialInstance(const UTexture2D& Text
 	GlintDynamicMaterialInstance->SetScalarParameterValue(FName("Prismatic Blend"), Data.PrismaticBlend);
 }
 
-void UInv_SlottedItem::UpdateStackCount(int32 StackCount)
+void UInv_SlottedItem::UpdateStackCount(int32 StackCount) const
 {
 	if (StackCount > 0)
 	{

@@ -1,20 +1,10 @@
 ﻿// Copyright xTear Studios
 /*-------------------------------------------------------------------------*/
 #include "Widgets/Inventory/Spatial/Inv_InventoryGrid.h"
-
-#include <rapidjson/internal/meta.h>
-#include <rapidjson/internal/stack.h>
-
-#include "IContentBrowserSingleton.h"
-#include "IDetailTreeNode.h"
-#include "InputState.h"
 #include "Inventory.h"
-#include "MyBlueprintItemDragDropAction.h"
-#include "NavigationSystemTypes.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
-#include "DSP/Chorus.h"
 #include "InventoryManagement/Components/Inv_InventoryComponent.h"
 #include "InventoryManagement/Utils/Inv_InventoryStatics.h"
 #include "Items/Inv_InventoryItem.h"
@@ -24,7 +14,6 @@
 #include "Widgets/Inventory/GridSlots/Inv_GridSlot.h"
 #include "Widgets/Utils/Inv_WidgetUtils.h"
 #include "Items/Manifest/Inv_ItemManifest.h"
-#include "ViewportToolbar/UnrealEdViewportToolbarContext.h"
 #include "Widgets/Inventory/HoverItem/Inv_HoverItem.h"
 #include "Widgets/Inventory/SlottedItems/Inv_SlottedItem.h"
 #include "Widgets/ItemPopUp/Inv_ItemPopUp.h"
@@ -509,9 +498,9 @@ void UInv_InventoryGrid::AssignHoverItem(UInv_InventoryItem* InventoryItem)
 	IconBrush.DrawAs = ESlateBrushDrawType::Image;
 	IconBrush.ImageSize = DrawSize * UWidgetLayoutLibrary::GetViewportScale(this);
 
-	HoverItem->SetImageBrush(IconBrush);
-	HoverItem->SetGridDimensions(GridFragment->GetGridSize());
 	HoverItem->SetInventoryItem(InventoryItem);
+	HoverItem->SetImageBrush(*ImageFragment->GetIcon(), DrawSize);
+	HoverItem->SetGridDimensions(GridFragment->GetGridSize());
 	HoverItem->SetIsStackable(InventoryItem->IsStackable());
 	
 	GetOwningPlayer()->SetMouseCursorWidget(EMouseCursor::Default, HoverItem);
@@ -900,7 +889,7 @@ void UInv_InventoryGrid::ClearHoverItem()
 	HoverItem->SetIsStackable(false);
 	HoverItem->SetPreviousGridIndex(INDEX_NONE);
 	HoverItem->UpdateStackCount(0);
-	HoverItem->SetImageBrush(FSlateNoResource());
+	// HoverItem->SetImageBrush(); <- I think its unnecessary? TODO: Make SURE its unnecessary lol.
 	// Obliterate Hover Item.
 	HoverItem->RemoveFromParent();
 	HoverItem = nullptr;
