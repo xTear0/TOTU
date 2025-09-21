@@ -15,6 +15,7 @@
 class USpringArmComponent;
 class UCameraComponent;
 class UNiagaraComponent;
+struct FPlayerAttributes;
 /*-------------------------------------------------------------------------*/
 
 
@@ -43,7 +44,24 @@ public:
 	virtual void AddToPlayerLevel_Implementation(int32 InPlayerLevel) override;
 	virtual void AddToAttributePoints_Implementation(int32 InAttributePoints) override;
 	virtual void AddToAbilityPoints_Implementation(int32 InAbilityPoints) override;
+	virtual int32 GetAttributePoints_Implementation() const override;
+	virtual int32 GetAbilityPoints_Implementation() const override;
 
+
+	// Attribute Getters and Modifiers
+	virtual FPlayerAttributes GetPlayerAttributes_Implementation() const override;
+	virtual void CreateNewPlayerAttributeID_Implementation() override;
+	virtual FGuid GetPlayerAttributeID_Implementation() const override;
+	
+	virtual void SetStrength_Implementation(int32 NewStrength) override;
+	virtual void SetIntelligence_Implementation(int32 NewIntelligence) override;
+	virtual void SetFortitude_Implementation(int32 NewFortitude) override;
+	virtual void SetVitality_Implementation(int32 NewVitality) override;
+	
+	virtual void AddToStrength_Implementation(int32 InStrength) override;
+	virtual void AddToIntelligence_Implementation(int32 InIntelligence) override;
+	virtual void AddToFortitude_Implementation(int32 InFortitude) override;
+	virtual void AddToVitality_Implementation(int32 InVitality) override;
 	/* End Player Interface */
 
 

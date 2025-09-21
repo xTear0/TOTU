@@ -3,6 +3,7 @@
 #include "EquipmentManagement/Modifications/Inv_AttributeModificationHandler.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
+#include "InterchangeResult.h"
 #include "TOTU/Public/Player/HeroPlayerState.h"
 #include "TOTU/Public/TOTUGameplayTags.h"
 /*-------------------------------------------------------------------------*/
@@ -21,7 +22,13 @@ void UInv_AttributeModificationHandler::AddPayload(const FGuid& PayloadID, const
 
 void UInv_AttributeModificationHandler::RemovePayload(const FGuid& PayloadID)
 {
-    ActivePayloads.Remove(PayloadID.ToString());
+    if (ActivePayloads.Contains(PayloadID.ToString()))
+    {
+        ActivePayloads.Remove(PayloadID.ToString());
+    } else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("No Payload was found with the ID %s. No issue, skipping."), *PayloadID.ToString());
+    }
     CycleGameplayEffectFromPayloads();
 }
 #pragma endregion

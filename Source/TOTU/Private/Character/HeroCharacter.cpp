@@ -123,6 +123,97 @@ void AHeroCharacter::AddToAbilityPoints_Implementation(int32 InAbilityPoints)
 	HeroPlayerState->AddToAbilityPoints(InAbilityPoints);
 }
 
+int32 AHeroCharacter::GetAttributePoints_Implementation() const
+{
+	AHeroPlayerState* HeroPlayerState = GetPlayerState<AHeroPlayerState>();
+	check(HeroPlayerState);
+	return HeroPlayerState->GetAttributePoints();
+}
+
+int32 AHeroCharacter::GetAbilityPoints_Implementation() const
+{
+	AHeroPlayerState* HeroPlayerState = GetPlayerState<AHeroPlayerState>();
+	check(HeroPlayerState);
+	return HeroPlayerState->GetAbilityPoints();
+}
+
+FPlayerAttributes AHeroCharacter::GetPlayerAttributes_Implementation() const
+{
+	AHeroPlayerState* HeroPlayerState = GetPlayerState<AHeroPlayerState>();
+	check(HeroPlayerState);
+	return HeroPlayerState->GetPlayerAttributes();
+}
+
+void AHeroCharacter::CreateNewPlayerAttributeID_Implementation()
+{
+	AHeroPlayerState* HeroPlayerState = GetPlayerState<AHeroPlayerState>();
+	check(HeroPlayerState);
+	HeroPlayerState->CreateNewPlayerAttributeID();
+}
+
+FGuid AHeroCharacter::GetPlayerAttributeID_Implementation() const
+{
+	AHeroPlayerState* HeroPlayerState = GetPlayerState<AHeroPlayerState>();
+	check(HeroPlayerState);
+	return HeroPlayerState->GetPlayerAttributeID();
+}
+
+void AHeroCharacter::SetStrength_Implementation(int32 NewStrength)
+{
+	AHeroPlayerState* HeroPlayerState = GetPlayerState<AHeroPlayerState>();
+	check(HeroPlayerState);
+	HeroPlayerState->SetStrength(NewStrength);
+}
+
+void AHeroCharacter::SetIntelligence_Implementation(int32 NewIntelligence)
+{
+	AHeroPlayerState* HeroPlayerState = GetPlayerState<AHeroPlayerState>();
+	check(HeroPlayerState);
+	HeroPlayerState->SetIntelligence(NewIntelligence);
+}
+
+void AHeroCharacter::SetFortitude_Implementation(int32 NewFortitude)
+{
+	AHeroPlayerState* HeroPlayerState = GetPlayerState<AHeroPlayerState>();
+	check(HeroPlayerState);
+	HeroPlayerState->SetFortitude(NewFortitude);
+}
+
+void AHeroCharacter::SetVitality_Implementation(int32 NewVitality)
+{
+	AHeroPlayerState* HeroPlayerState = GetPlayerState<AHeroPlayerState>();
+	check(HeroPlayerState);
+	HeroPlayerState->SetVitality(NewVitality);
+}
+
+void AHeroCharacter::AddToStrength_Implementation(int32 InStrength)
+{
+	AHeroPlayerState* HeroPlayerState = GetPlayerState<AHeroPlayerState>();
+	check(HeroPlayerState);
+	HeroPlayerState->AddToStrength(InStrength);
+}
+
+void AHeroCharacter::AddToIntelligence_Implementation(int32 InIntelligence)
+{
+	AHeroPlayerState* HeroPlayerState = GetPlayerState<AHeroPlayerState>();
+	check(HeroPlayerState);
+	HeroPlayerState->AddToIntelligence(InIntelligence);
+}
+
+void AHeroCharacter::AddToFortitude_Implementation(int32 InFortitude)
+{
+	AHeroPlayerState* HeroPlayerState = GetPlayerState<AHeroPlayerState>();
+	check(HeroPlayerState);
+	HeroPlayerState->AddToFortitude(InFortitude);
+}
+
+void AHeroCharacter::AddToVitality_Implementation(int32 InVitality)
+{
+	AHeroPlayerState* HeroPlayerState = GetPlayerState<AHeroPlayerState>();
+	check(HeroPlayerState);
+	HeroPlayerState->AddToVitality(InVitality);
+}
+
 int32 AHeroCharacter::GetPlayerLevel_Implementation()
 {
 	const AHeroPlayerState* HeroPlayerState = GetPlayerState<AHeroPlayerState>();

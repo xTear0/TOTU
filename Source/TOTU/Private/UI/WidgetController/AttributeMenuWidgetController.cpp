@@ -50,6 +50,13 @@ void UAttributeMenuWidgetController::BroadcastInitialValues()
 	AttributePointsChangedDelegate.Broadcast(TOTUPlayerState->GetAttributePoints());
 	
 }
+
+void UAttributeMenuWidgetController::UpgradeAttribute(const FGameplayTag& AttributeTag)
+{
+	UTOTUAbilitySystemComponent* TOTUASC = CastChecked<UTOTUAbilitySystemComponent>(AbilitySystemComponent);
+	TOTUASC->UpgradeAttribute(AttributeTag);
+}
+
 void UAttributeMenuWidgetController::BroadcastAttributeInfo(const FGameplayTag& AttributeTag, const FGameplayAttribute& Attribute) const
 {
 	FTOTUAttributeInfo Info = AttributeInfo->FindAttributeInfoForTag(AttributeTag);

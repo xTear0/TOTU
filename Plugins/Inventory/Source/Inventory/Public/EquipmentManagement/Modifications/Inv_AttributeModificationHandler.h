@@ -64,10 +64,10 @@ public:
 /*-------------------------------------------------------------------------*/
 #pragma region Inv_AttributeModificationHandler.h_AttributeExporting
     
-    UFUNCTION() // TODO: Not sure if this needs the macro tbh, tbd.
+    UFUNCTION()
     void AddPayload(const FGuid& PayloadID, const FInv_EquippedItemPayload& Payload);
     
-    UFUNCTION() // TODO: Not sure if this needs the macro tbh, tbd.
+    UFUNCTION()
     void RemovePayload(const FGuid& PayloadID);
     
 #pragma endregion

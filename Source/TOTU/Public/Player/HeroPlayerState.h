@@ -19,7 +19,28 @@
 class UAbilitySystemComponent;
 class UAttributeSet;
 class ULevelUpInfo;
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerStatChanged, int32 /*StatValue*/)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerStatChanged, int32 /* StatValue */)
+
+USTRUCT(BlueprintType)
+struct FPlayerAttributes
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	int32 PlayerStrength{0};
+
+	UPROPERTY()
+	int32 PlayerIntelligence{0};
+
+	UPROPERTY()
+	int32 PlayerFortitude{0};
+
+	UPROPERTY()
+	int32 PlayerVitality{0};
+};
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerAttributesChanged, FPlayerAttributes /* Attributes */)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerAttributeIDChanged, FGuid /* Attribute ID */)
 /*-------------------------------------------------------------------------*/
 
 
@@ -51,12 +72,16 @@ public:
 	FOnPlayerStatChanged OnLevelChangedDelegate;
 	FOnPlayerStatChanged OnAttributePointChangedDelegate;
 	FOnPlayerStatChanged OnAbilityPointChangedDelegate;
+	FOnPlayerAttributesChanged OnAttributesChangedDelegate;
+	FOnPlayerAttributeIDChanged OnAttributeIDChangedDelegate;
 	
 	FORCEINLINE int32 GetPlayerLevel() const { return Level; }
 	FORCEINLINE int32 GetXP() const { return XP; }
 	FORCEINLINE int32 GetAttributePoints() const { return AttributePoints; }
 	FORCEINLINE int32 GetAbilityPoints() const { return AbilityPoints; }
-
+	FORCEINLINE FPlayerAttributes GetPlayerAttributes() const { return PlayerAttributes; }
+	FORCEINLINE FGuid GetPlayerAttributeID() const { return PlayerAttributeID; }
+	
 	void SetXP(int32 NewXP);
 	void SetLevel(int32 NewLevel);
 	
@@ -64,6 +89,18 @@ public:
 	void AddToLevel(int32 InLevel);
 	void AddToAttributePoints(int32 InPoints);
 	void AddToAbilityPoints(int32 InPoints);
+
+	void CreateNewPlayerAttributeID();
+	
+	FORCEINLINE void SetStrength(int32 NewStrength) { PlayerAttributes.PlayerStrength = NewStrength; }
+	FORCEINLINE void SetIntelligence(int32 NewIntelligence) { PlayerAttributes.PlayerIntelligence = NewIntelligence; }
+	FORCEINLINE void SetFortitude(int32 NewFortitude) { PlayerAttributes.PlayerFortitude = NewFortitude; }
+	FORCEINLINE void SetVitality(int32 NewVitality) { PlayerAttributes.PlayerVitality = NewVitality; }
+
+	FORCEINLINE void AddToStrength(int32 InStrength) { PlayerAttributes.PlayerStrength += InStrength; }
+	FORCEINLINE void AddToIntelligence(int32 InIntelligence) { PlayerAttributes.PlayerIntelligence += InIntelligence; }
+	FORCEINLINE void AddToFortitude(int32 InFortitude) { PlayerAttributes.PlayerFortitude += InFortitude; }
+	FORCEINLINE void AddToVitality(int32 InVitality) { PlayerAttributes.PlayerVitality += InVitality; }
 	
 protected:
 	UPROPERTY(VisibleAnywhere)
@@ -88,6 +125,12 @@ private:
 	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_AbilityPoints)
 	int32 AbilityPoints = 0;
 
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_PlayerAttributes)
+	FPlayerAttributes PlayerAttributes;
+
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_PlayerAttributeID)
+	FGuid PlayerAttributeID;
+	
 	UFUNCTION() 
 	void OnRep_Level(int32 OldLevel);
 
@@ -99,6 +142,12 @@ private:
 
 	UFUNCTION() 
 	void OnRep_AbilityPoints(int32 OldAbilityPoints);
+
+	UFUNCTION()
+	void OnRep_PlayerAttributes(FPlayerAttributes OldPlayerAttributes);
+
+	UFUNCTION()
+	void OnRep_PlayerAttributeID(FGuid OldPlayerAttributeID);
 
 };
 #pragma endregion

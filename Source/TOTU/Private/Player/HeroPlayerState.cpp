@@ -37,6 +37,8 @@ void AHeroPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(AHeroPlayerState, XP);
 	DOREPLIFETIME(AHeroPlayerState, AttributePoints);
 	DOREPLIFETIME(AHeroPlayerState, AbilityPoints);
+	DOREPLIFETIME(AHeroPlayerState, PlayerAttributes);
+	DOREPLIFETIME(AHeroPlayerState, PlayerAttributeID);
 }
 
 void AHeroPlayerState::BeginPlay()
@@ -44,6 +46,7 @@ void AHeroPlayerState::BeginPlay()
 	Super::BeginPlay();
 	
 	AttributeModificationHandler = NewObject<UInv_AttributeModificationHandler>(this);
+	CreateNewPlayerAttributeID();
 }
 
 
@@ -73,19 +76,24 @@ void AHeroPlayerState::AddToXP(int32 InXp)
 void AHeroPlayerState::AddToLevel(int32 InLevel)
 {
 	Level += InLevel;
-	OnLevelChangedDelegate.Broadcast(InLevel);
+	OnLevelChangedDelegate.Broadcast(Level);
 }
 
 void AHeroPlayerState::AddToAttributePoints(int32 InPoints)
 {
 	AttributePoints += InPoints;
-	OnAttributePointChangedDelegate.Broadcast(InPoints);
+	OnAttributePointChangedDelegate.Broadcast(AttributePoints);
 }
 
 void AHeroPlayerState::AddToAbilityPoints(int32 InPoints)
 {
 	AbilityPoints += InPoints;
-	OnAbilityPointChangedDelegate.Broadcast(InPoints);
+	OnAbilityPointChangedDelegate.Broadcast(AbilityPoints);
+}
+
+void AHeroPlayerState::CreateNewPlayerAttributeID()
+{
+	PlayerAttributeID = FGuid::NewGuid();
 }
 
 void AHeroPlayerState::OnRep_Level(int32 OldLevel)
@@ -100,12 +108,22 @@ void AHeroPlayerState::OnRep_XP(int32 OldXP)
 
 void AHeroPlayerState::OnRep_AttributePoints(int32 OldAttributePoints)
 {
-	OnAttributePointChangedDelegate.Broadcast(AbilityPoints);
+	OnAttributePointChangedDelegate.Broadcast(AttributePoints);
 }
 
 void AHeroPlayerState::OnRep_AbilityPoints(int32 OldAbilityPoints)
 {
 	OnAbilityPointChangedDelegate.Broadcast(AbilityPoints);
+}
+
+void AHeroPlayerState::OnRep_PlayerAttributes(FPlayerAttributes OldPlayerAttributes)
+{
+	OnAttributesChangedDelegate.Broadcast(PlayerAttributes);
+}
+
+void AHeroPlayerState::OnRep_PlayerAttributeID(FGuid OldPlayerAttributeID)
+{
+	OnAttributeIDChangedDelegate.Broadcast(PlayerAttributeID);
 }
 #pragma endregion
 /*-------------------------------------------------------------------------*/
