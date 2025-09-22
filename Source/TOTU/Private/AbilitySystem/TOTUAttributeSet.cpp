@@ -11,7 +11,6 @@
 #include "TOTUGameplayTags.h"
 #include "Interaction/PlayerInterface.h"
 #include "Player/HeroPlayerController.h"
-#include "TOTU/TOTULogChannels.h"
 /*-------------------------------------------------------------------------*/
 
 
@@ -289,14 +288,32 @@ void UTOTUAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 				IPlayerInterface::Execute_AddToPlayerLevel(Properties.SourceCharacter, NumLevelUps);
 				IPlayerInterface::Execute_AddToAttributePoints(Properties.SourceCharacter, AttributePointsReward);
 				IPlayerInterface::Execute_AddToAbilityPoints(Properties.SourceCharacter, AbilityPointsReward);	
-				SetHealth(GetMaxHealth());
-				SetMana(GetMaxMana());
+
+				bTopOffHealth = true;
+				bTopOffMana = true;
 				
 				IPlayerInterface::Execute_LevelUp(Properties.SourceCharacter);
 			}
 			IPlayerInterface::Execute_AddToXP(Properties.SourceCharacter, LocalIncomingXP);
 		}
 	}
+}
+
+void UTOTUAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)
+{
+	Super::PostAttributeChange(Attribute, OldValue, NewValue);
+
+	if (Attribute == GetMaxHealthAttribute() && bTopOffHealth)
+	{
+		SetHealth(GetMaxHealth());
+		bTopOffHealth = false;
+	}
+	if (Attribute == GetMaxManaAttribute() && bTopOffMana)
+	{
+		SetMana(GetMaxMana());
+		bTopOffMana = false;
+	}
+	
 }
 
 void UTOTUAttributeSet::SendXPEvent(const FEffectProperties& Properties)
