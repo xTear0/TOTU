@@ -5,6 +5,7 @@
 #include "Types/Inv_EnumTypes.h"
 #include "StructUtils/InstancedStruct.h"
 #include "GameplayTagContainer.h"
+#include "Items/Inv_ItemTags.h"
 #include "Inv_ItemManifest.generated.h"
 /*-------------------------------------------------------------------------*/
 
@@ -38,7 +39,6 @@ struct FInv_ItemAttributePair
 	UPROPERTY(EditAnywhere, Category = "Inventory", meta = (Categories= "FragmentTags.StatMod" ))
 	FGameplayTag FragmentTag{FGameplayTag::EmptyTag};
 };
-
 USTRUCT(BlueprintType)
 struct FInv_ItemAbilityPair
 {
@@ -69,7 +69,7 @@ struct INVENTORY_API FInv_ItemManifest
 	int32 GetItemSellValue() const { return SellValue; }
 	FGameplayTag GetItemType() const { return ItemType; }
 	int32 GetItemAttributeValue(FGameplayTag AttributeTag) const;
-
+	
 	// Automatic Display Builder
 	void ConstructManifestDisplayFragments();
 	void EmptyManifestDisplayFragments();

@@ -50,11 +50,26 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerAttributeIDChanged, FGuid /* Attrib
 /*-------------------------------------------------------------------------*/
 #pragma region HeroPlayerState.h_Class
 UCLASS()
-class TOTU_API AHeroPlayerState : public APlayerState, public IAbilitySystemInterface, public ICombatInterface
+class TOTU_API AHeroPlayerState : public APlayerState, public IAbilitySystemInterface, public ICombatInterface, public IInv_AbilitySystemInterface
 {
 	GENERATED_BODY()
 public:
 	AHeroPlayerState();
+
+	/*-------------------------------------------------------------------------*/
+	// REQUIRED FOR INVENTORY COMPATIBILITY
+	/*-------------------------------------------------------------------------*/
+	virtual UAbilitySystemComponent* GetAbilitySystemComponentForInventory() const override
+	{
+		return AbilitySystemComponent;
+	}
+    
+	virtual UInv_AttributeModificationHandler* GetAttributeModificationHandlerForInventory() const override
+	{
+		return AttributeModificationHandler;
+	}
+	/*-------------------------------------------------------------------------*/
+	
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void BeginPlay() override;

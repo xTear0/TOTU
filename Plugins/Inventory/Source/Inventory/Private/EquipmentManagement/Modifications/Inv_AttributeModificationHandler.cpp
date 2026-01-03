@@ -1,11 +1,12 @@
 ﻿// Copyright xTear Studios
 /*-------------------------------------------------------------------------*/
 #include "EquipmentManagement/Modifications/Inv_AttributeModificationHandler.h"
+#include "TOTU/Public/AbilitySystem/TOTUAttributeSet.h"
 #include "AbilitySystemComponent.h"
+#include "GameFramework/PlayerState.h"
 #include "AbilitySystemGlobals.h"
 #include "InterchangeResult.h"
-#include "TOTU/Public/Player/HeroPlayerState.h"
-#include "TOTU/Public/TOTUGameplayTags.h"
+
 /*-------------------------------------------------------------------------*/
 
 
@@ -141,23 +142,27 @@ void UInv_AttributeModificationHandler::ApplyGameplayEffect()
 
 UAbilitySystemComponent* UInv_AttributeModificationHandler::GetValidatedAbilitySystemComponent()
 {
-    // Get the Player State (assuming this object is owned by Player State)
-    AHeroPlayerState* HeroPlayerState = GetTypedOuter<AHeroPlayerState>();
-    if (!HeroPlayerState)
+    // Try to get from outer that implements the interface
+    UObject* Outer = GetOuter();
+    if (!Outer)
     {
-        UE_LOG(LogTemp, Warning, TEXT("AttributeModificationHandler: Could not find Player State"));
+        UE_LOG(LogTemp, Warning, TEXT("AttributeModificationHandler: No outer object"));
         return nullptr;
     }
     
-    // Get the Ability System Component
-    UAbilitySystemComponent* ASC = HeroPlayerState->GetAbilitySystemComponent();
-    if (!ASC)
+    if (IInv_AbilitySystemInterface* AbilityInterface = Cast<IInv_AbilitySystemInterface>(Outer))
     {
-        UE_LOG(LogTemp, Warning, TEXT("AttributeModificationHandler: Player State has no Ability System Component"));
-        return nullptr;
+        UAbilitySystemComponent* ASC = AbilityInterface->GetAbilitySystemComponentForInventory();
+        if (!ASC)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("AttributeModificationHandler: No Ability System Component"));
+            return nullptr;
+        }
+        return ASC;
     }
     
-    return ASC;
+    UE_LOG(LogTemp, Warning, TEXT("AttributeModificationHandler: Outer does not implement IInv_AbilitySystemInterface"));
+    return nullptr;
 }
 
 TMap<FGameplayTag, int32> UInv_AttributeModificationHandler::CalculateAttributeTotals()
@@ -268,28 +273,13 @@ void UInv_AttributeModificationHandler::ApplyEffectToAbilitySystem(UAbilitySyste
 
 FGameplayAttribute UInv_AttributeModificationHandler::GetAttributeFromTag(const FGameplayTag& AttributeTag) const
 {
+    if (!AttributeSetAccessor)
     {
-        // Fetch the attribute set from the ASC.
-        if (!CachedASC.IsValid())
-        {
-            return FGameplayAttribute();
-        }
-        
-        const UTOTUAttributeSet* AttributeSet = CachedASC->GetSet<UTOTUAttributeSet>();
-        if (!AttributeSet)
-        {
-            return FGameplayAttribute();
-        }
-        
-        if (const auto* FunctionPtr = AttributeSet->TagsToAttributes.Find(AttributeTag))
-        {
-            if (*FunctionPtr)
-            {
-                return (*FunctionPtr)();
-            }
-        }
-        return FGameplayAttribute(); // Invalid attribute if not found
+        UE_LOG(LogTemp, Warning, TEXT("AttributeSetAccessor not set!"));
+        return FGameplayAttribute();
     }
+    
+    return AttributeSetAccessor->GetAttributeFromTag(AttributeTag);
 }
 #pragma endregion
 /*-------------------------------------------------------------------------*/

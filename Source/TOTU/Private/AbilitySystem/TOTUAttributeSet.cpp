@@ -77,7 +77,7 @@ UTOTUAttributeSet::UTOTUAttributeSet()
 	// Primary Attributes
 	TagsToAttributes.Add(GameplayTags.Attributes_Primary_Strength, GetStrengthAttribute);
 	TagsToAttributes.Add(GameplayTags.Attributes_Primary_Intelligence, GetIntelligenceAttribute);
-	TagsToAttributes.Add(GameplayTags.Attributes_Primary_Fortitude, GetResilienceAttribute);
+	TagsToAttributes.Add(GameplayTags.Attributes_Primary_Fortitude, GetFortitudeAttribute);
 	TagsToAttributes.Add(GameplayTags.Attributes_Primary_Vitality, GetVitalityAttribute);
 	
 	// Secondary Attributes
@@ -121,7 +121,7 @@ void UTOTUAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 /*-------------------------------------------------------------------*/
 	DOREPLIFETIME_CONDITION_NOTIFY(UTOTUAttributeSet, Strength, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UTOTUAttributeSet, Intelligence, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UTOTUAttributeSet, Resilience, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UTOTUAttributeSet, Fortitude, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UTOTUAttributeSet, Vitality, COND_None, REPNOTIFY_Always);
 /*-------------------------------------------------------------------*/
 /*   Secondary Attributes								             */
@@ -379,8 +379,8 @@ void UTOTUAttributeSet::OnRep_Strength(const FGameplayAttributeData& OldStrength
 void UTOTUAttributeSet::OnRep_Intelligence(const FGameplayAttributeData& OldIntelligence) const
 {	GAMEPLAYATTRIBUTE_REPNOTIFY(UTOTUAttributeSet, Intelligence, OldIntelligence); }
 
-void UTOTUAttributeSet::OnRep_Resilience(const FGameplayAttributeData& OldResilience) const
-{	GAMEPLAYATTRIBUTE_REPNOTIFY(UTOTUAttributeSet, Resilience, OldResilience); }
+void UTOTUAttributeSet::OnRep_Fortitude(const FGameplayAttributeData& OldFortitude) const
+{	GAMEPLAYATTRIBUTE_REPNOTIFY(UTOTUAttributeSet, Fortitude, OldFortitude); }
 
 void UTOTUAttributeSet::OnRep_Vitality(const FGameplayAttributeData& OldVitality) const
 {	GAMEPLAYATTRIBUTE_REPNOTIFY(UTOTUAttributeSet, Vitality, OldVitality); }

@@ -7,21 +7,11 @@ public class Inventory : ModuleRules
 	public Inventory(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
-		
-		PublicIncludePaths.AddRange(
-			new string[] {
-				// ... add public include paths required here ...
-			}
-			);
-				
-		
-		PrivateIncludePaths.AddRange(
-			new string[] {
-				// ... add other private include paths required here ...
-			}
-			);
-			
-		
+       
+		PublicIncludePaths.AddRange(new string[] { });
+             
+		PrivateIncludePaths.AddRange(new string[] { });
+          
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
@@ -34,33 +24,37 @@ public class Inventory : ModuleRules
 				"Slate",
 				"SlateCore",
 				"GameplayTags", 
-				"GameplayAbilities",
-				"TOTU"
-				// ... add other public dependencies that you statically link with here ...
+				"GameplayAbilities"
 			}
-			);
-			
-		
+		);
+          
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
 				"CoreUObject",
-				"Engine",	
+				"Engine",  
 				"Slate",
 				"SlateCore",
 				"EnhancedInput",
 				"UMG",
-				"InputCore", 
-				"TOTU"
-				// ... add private dependencies that you statically link with here ...	
+				"InputCore"
 			}
-			);
+		);
 		
-		DynamicallyLoadedModuleNames.AddRange(
+		PublicIncludePathModuleNames.AddRange(
 			new string[]
 			{
-				// ... add any modules that your module loads dynamically here ...
+				"TOTU"
 			}
-			);
+		);
+
+		PrivateIncludePathModuleNames.AddRange(
+			new string[]
+			{
+				"TOTU"
+			}
+		);
+       
+		DynamicallyLoadedModuleNames.AddRange(new string[] { });
 	}
 }

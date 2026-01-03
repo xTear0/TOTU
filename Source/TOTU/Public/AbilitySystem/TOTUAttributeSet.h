@@ -158,9 +158,9 @@ public:
 	FGameplayAttributeData Intelligence;
 	ATTRIBUTE_ACCESSORS(UTOTUAttributeSet, Intelligence);
 
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Resilience, Category = "Primary Attributes")
-	FGameplayAttributeData Resilience;
-	ATTRIBUTE_ACCESSORS(UTOTUAttributeSet, Resilience);
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Fortitude, Category = "Primary Attributes")
+	FGameplayAttributeData Fortitude;
+	ATTRIBUTE_ACCESSORS(UTOTUAttributeSet, Fortitude);
 
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Vitality, Category = "Primary Attributes")
 	FGameplayAttributeData Vitality;
@@ -275,7 +275,7 @@ public:
 	UFUNCTION()
 	void OnRep_Intelligence(const FGameplayAttributeData& OldIntelligence) const;
 	UFUNCTION()
-	void OnRep_Resilience(const FGameplayAttributeData& OldResilience) const;
+	void OnRep_Fortitude(const FGameplayAttributeData& OldFortitude) const;
 	UFUNCTION()
 	void OnRep_Vitality(const FGameplayAttributeData& OldVitality) const;
 
@@ -305,6 +305,7 @@ public:
 /*-------------------------------------------------------------------*/
 /*   Resistance Attribute Functions                                  */
 /*-------------------------------------------------------------------*/
+
 	UFUNCTION()
 	void OnRep_Resistance(const FGameplayAttributeData& OldResistance) const;
 	UFUNCTION()
@@ -319,6 +320,7 @@ public:
 	void OnRep_LightResistance(const FGameplayAttributeData& OldLightRes) const;
 	UFUNCTION()
 	void OnRep_ShadowResistance(const FGameplayAttributeData& OldShadowRes) const;
+	
 /*-------------------------------------------------------------------*/
 /*   Deprecated Attribute Functions                                  */
 /*-------------------------------------------------------------------*/

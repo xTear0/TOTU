@@ -3,11 +3,12 @@
 #include "Items/Fragments/Inv_ItemFragment.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "Interfaces/Inv_AbilitySystemInterface.h"
 #include "EquipmentManagement/EquipActor/Inv_EquipActor.h"
 #include "EquipmentManagement/Modifications/Inv_EquippedItemPayload.h"
+#include "EquipmentManagement/Modifications/Inv_AttributeModificationHandler.h"
 #include "GameFramework/PlayerState.h"
 #include "Items/Manifest/Inv_ItemManifest.h"
-#include "TOTU/Public/Player/HeroPlayerState.h"
 #include "Widgets/Composite/Inv_CompositeBase.h"
 #include "Widgets/Composite/Inv_Leaf_EnumValue.h"
 #include "Widgets/Composite/Inv_Leaf_Image.h"
@@ -270,34 +271,69 @@ void FInv_PotionFragment::OnConsume(APlayerController* PC)
 // For each subfragment, call OnEquip and Unequip
 void FInv_EquipmentFragment::OnEquip(APlayerController* PC)
 {
-	if (bEquipped) return;
-	bEquipped = true;
-	// Create Equipped Item Payload
-	FInv_EquippedItemPayload Payload = FInv_EquippedItemPayload::Create(
-	FName(*OwningManifest->GetItemName().ToString()),
-	UInv_WidgetUtils::GetColorFromRarityEnum(OwningManifest->GetItemRarity()),
-	OwningManifest->GetItemAttributes(),
-	OwningManifest->GetItemAbilities()
-	);
-	
-	// Keep track of Payload for Unequip Removal.
-	EquippedPayloadID = Payload.PayloadID;
+    if (bEquipped) return;
+    bEquipped = true;
+    
+    // Create Equipped Item Payload
+    FInv_EquippedItemPayload Payload = FInv_EquippedItemPayload::Create(
+        FName(*OwningManifest->GetItemName().ToString()),
+        UInv_WidgetUtils::GetColorFromRarityEnum(OwningManifest->GetItemRarity()),
+        OwningManifest->GetItemAttributes(),
+        OwningManifest->GetItemAbilities()
+    );
+    
+    // Keep track of Payload for Unequip Removal.
+    EquippedPayloadID = Payload.PayloadID;
 
-	AHeroPlayerState* HeroPlayerState = PC->GetPlayerState<AHeroPlayerState>();
-	UInv_AttributeModificationHandler* AttributeHandler = HeroPlayerState->GetAttributeModificationHandler();
-	if (IsValid(AttributeHandler)) AttributeHandler->AddPayload(Payload.PayloadID, Payload);
+    // Get PlayerState through interface
+    APlayerState* PlayerState = PC->GetPlayerState<APlayerState>();
+    if (!PlayerState)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("OnEquip: No PlayerState found"));
+        return;
+    }
+    
+    IInv_AbilitySystemInterface* AbilityInterface = Cast<IInv_AbilitySystemInterface>(PlayerState);
+    if (!AbilityInterface)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("OnEquip: PlayerState does not implement IInv_AbilitySystemInterface"));
+        return;
+    }
+    
+    UInv_AttributeModificationHandler* AttributeHandler = AbilityInterface->GetAttributeModificationHandlerForInventory();
+    if (IsValid(AttributeHandler))
+    {
+        AttributeHandler->AddPayload(Payload.PayloadID, Payload);
+    }
 }
 
 void FInv_EquipmentFragment::OnUnequip(APlayerController* PC)
 {
-	if (!bEquipped) return;
-	bEquipped = false;
+    if (!bEquipped) return;
+    bEquipped = false;
 
-	AHeroPlayerState* HeroPlayerState = PC->GetPlayerState<AHeroPlayerState>();
-	UInv_AttributeModificationHandler* AttributeHandler = HeroPlayerState->GetAttributeModificationHandler();
-	if (IsValid(AttributeHandler)) AttributeHandler->RemovePayload(EquippedPayloadID);
-		
-	EquippedPayloadID.Invalidate();
+    // Get PlayerState through interface
+    APlayerState* PlayerState = PC->GetPlayerState<APlayerState>();
+    if (!PlayerState)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("OnUnequip: No PlayerState found"));
+        return;
+    }
+    
+    IInv_AbilitySystemInterface* AbilityInterface = Cast<IInv_AbilitySystemInterface>(PlayerState);
+    if (!AbilityInterface)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("OnUnequip: PlayerState does not implement IInv_AbilitySystemInterface"));
+        return;
+    }
+    
+    UInv_AttributeModificationHandler* AttributeHandler = AbilityInterface->GetAttributeModificationHandlerForInventory();
+    if (IsValid(AttributeHandler))
+    {
+        AttributeHandler->RemovePayload(EquippedPayloadID);
+    }
+        
+    EquippedPayloadID.Invalidate();
 }
 /*-------------------------------------------------------------------------*/
 

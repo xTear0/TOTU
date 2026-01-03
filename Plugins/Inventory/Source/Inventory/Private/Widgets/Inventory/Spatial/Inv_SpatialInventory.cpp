@@ -1,7 +1,6 @@
 ﻿// Copyright xTear Studios
 /*-------------------------------------------------------------------------*/
 #include "Widgets/Inventory/Spatial/Inv_SpatialInventory.h"
-
 #include "IDetailTreeNode.h"
 #include "Widgets/ItemDescription/Inv_ItemDescription.h"
 #include "Widgets/Inventory/GridSlots/Inv_EquippedGridSlot.h"
@@ -13,10 +12,11 @@
 #include "Components/CanvasPanelSlot.h"
 #include "Components/MultiLineEditableTextBox.h"
 #include "Components/WidgetSwitcher.h"
+#include "Interfaces/Inv_AbilitySystemInterface.h"
 #include "InventoryManagement/Components/Inv_InventoryComponent.h"
+#include "GameFramework/PlayerState.h"
 #include "InventoryManagement/Utils/Inv_InventoryStatics.h"
 #include "Items/Inv_InventoryItem.h"
-#include "Player/HeroPlayerState.h"
 #include "Widgets/Inventory/Spatial/Inv_InventoryGrid.h"
 #include "Widgets/Inventory/HoverItem/Inv_HoverItem.h"
 #include "Widgets/Inventory/SlottedItems/Inv_EquippedSlottedItem.h"
@@ -447,16 +447,16 @@ void UInv_SpatialInventory::BindToAttributeHoverSubsystem()
 void UInv_SpatialInventory::OnGlobalAttributeHover(bool bShow, FGameplayTag AttributeTag)
 {
 	FHoverInspectResult HoverInspectResult;
-	
+    
 	if (APlayerController* PlayerController = GetOwningPlayer())
 	{
 		if (APawn* PlayerPawn = PlayerController->GetPawn())
 		{
 			if (APlayerState* PlayerState = PlayerPawn->GetPlayerState())
 			{
-				if (AHeroPlayerState* HeroPlayerState = Cast<AHeroPlayerState>(PlayerState))
+				if (IInv_AbilitySystemInterface* AbilityInterface = Cast<IInv_AbilitySystemInterface>(PlayerState))
 				{
-					if (UInv_AttributeModificationHandler* AttributeHandler = HeroPlayerState->GetAttributeModificationHandler())
+					if (UInv_AttributeModificationHandler* AttributeHandler = AbilityInterface->GetAttributeModificationHandlerForInventory())
 					{
 						HoverInspectResult = AttributeHandler->HoverInspectAttribute(AttributeTag);
 					}

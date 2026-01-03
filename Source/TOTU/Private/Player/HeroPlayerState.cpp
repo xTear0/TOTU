@@ -1,6 +1,8 @@
 // Copyright xTear Studios
 /*-------------------------------------------------------------------------*/
 #include "Player/HeroPlayerState.h"
+
+#include "AbilitySystem/TOTUAttributeSetAccessor.h"
 #include "Net/UnrealNetwork.h"
 /*-------------------------------------------------------------------------*/
 
@@ -47,6 +49,12 @@ void AHeroPlayerState::BeginPlay()
 	
 	AttributeModificationHandler = NewObject<UInv_AttributeModificationHandler>(this);
 	CreateNewPlayerAttributeID();
+
+	if (AttributeModificationHandler)
+	{
+		UTOTUAttributeSetAccessor* Accessor = NewObject<UTOTUAttributeSetAccessor>(this);
+		AttributeModificationHandler->SetAttributeSetAccessor(Accessor);
+	}
 }
 
 

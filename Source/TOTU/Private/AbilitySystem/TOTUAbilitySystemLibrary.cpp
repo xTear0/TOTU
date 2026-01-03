@@ -2,6 +2,7 @@
 /*-------------------------------------------------------------------------*/
 #include "AbilitySystem/TOTUAbilitySystemLibrary.h"
 #include "AbilitySystem/TOTUAbilitySystemComponent.h"
+#include "Engine/OverlapResult.h"
 #include "Interaction/CombatInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/HUD/TOTUHUD.h"

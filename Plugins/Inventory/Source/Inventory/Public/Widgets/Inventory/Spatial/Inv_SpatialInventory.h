@@ -13,6 +13,8 @@
 /*-------------------------------------------------------------------------*/
 /*   Declarations                                                          */
 /*-------------------------------------------------------------------------*/
+class AHeroPlayerState;
+class UInv_AttributeModificationHandler;
 class UInv_InventoryGrid;
 class UInv_ItemDescription;
 class UWidgetSwitcher;

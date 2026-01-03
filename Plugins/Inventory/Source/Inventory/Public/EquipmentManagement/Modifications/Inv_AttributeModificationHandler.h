@@ -3,7 +3,9 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "ActiveGameplayEffectHandle.h"
-#include "TOTU/Public/AbilitySystem/TOTUAttributeSet.h"
+#include "GameplayEffect.h"
+#include "AbilitySystem/Inv_AttributeSetAccessor.h"
+#include "Interfaces/Inv_AbilitySystemInterface.h"
 #include "Inv_EquippedItemPayload.h"
 #include "UObject/Object.h"
 #include "GameplayTagContainer.h"
@@ -16,6 +18,9 @@
 /*-------------------------------------------------------------------------*/
 /*   Declarations                                                          */
 /*-------------------------------------------------------------------------*/
+class UAbilitySystemComponent;
+struct FGameplayAttribute;
+
 USTRUCT(BlueprintType)
 struct INVENTORY_API FInv_ItemPayloadDataEntry
 {
@@ -58,6 +63,9 @@ class INVENTORY_API UInv_AttributeModificationHandler : public UObject
     GENERATED_BODY()
 
 public:
+
+    UFUNCTION(BlueprintCallable, Category = "Inventory")
+    void SetAttributeSetAccessor(UInv_AttributeSetAccessor* Accessor) { AttributeSetAccessor = Accessor; }
     
 /*-------------------------------------------------------------------------*/
 /*   Payload Management Functions                                          */
@@ -125,6 +133,9 @@ private:
     TWeakObjectPtr<UAbilitySystemComponent> CachedASC;
     
     FActiveGameplayEffectHandle ActiveEffectHandle;
+
+    UPROPERTY()
+    TObjectPtr<UInv_AttributeSetAccessor> AttributeSetAccessor;
     
 };
 #pragma endregion

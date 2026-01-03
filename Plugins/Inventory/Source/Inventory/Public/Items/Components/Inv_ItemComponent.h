@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Items/Manifest/Inv_ItemManifest.h"
+#include "Widgets/ItemDescription/Inv_ItemDescription.h"
 #include "Inv_ItemComponent.generated.h"
 /*-------------------------------------------------------------------------*/
 
@@ -25,6 +26,8 @@ public:
 	FInv_ItemManifest GetItemManifest() const { return ItemManifest; }
 	FString  GetPickupMessage() const { return PickupMessage; }
 	void PickedUp();
+
+	void SetManifest(FInv_ItemManifest NewManifest) { ItemManifest = NewManifest; };
 	
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")
